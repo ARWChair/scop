@@ -33,9 +33,21 @@ Scop_window::Scop_window(int x, int y, unsigned int width, unsigned int height, 
     created_window = true;
 }
 
-// Scop_window& Scop_window::operator=(const Scop_window& copy) {
-
-// }
+Scop_window& Scop_window::operator=(const Scop_window& copy) {
+    if (this != &copy) {
+        this->x = copy.x;
+        this->y = copy.y;
+        this->width = copy.width;
+        this->height = copy.height;
+        this->border_width = copy.border_width;
+        this->depth = copy.depth;
+        this->ui_class = copy.ui_class;
+        visual = copy.visual;
+        this->valuemask = copy.valuemask;
+        this->attributes = copy.attributes;
+    }
+    return *this;
+}
 
 Scop_window::~Scop_window() {
     XUnmapWindow(main_display, main_window);
@@ -47,6 +59,7 @@ void Scop_window::create_window() {
     main_window = XCreateWindow(main_display, root_window, x, y, width, height, border_width, depth, ui_class, visual, valuemask, &attributes);
     if (main_window == 0)
         throw WindowCreationFailed();
+    XStoreName(main_display, main_window, "Scop");
     XMapWindow(main_display, main_window);
 }
 

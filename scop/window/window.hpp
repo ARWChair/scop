@@ -9,7 +9,7 @@ class Scop_window {
         Scop_window(int x, int y, unsigned int width, unsigned int height, unsigned int border_width = 0,
                     int depth = 0, unsigned int ui_class = 0, Visual *visual = CopyFromParent,
                     unsigned int valuemask = 0, XSetWindowAttributes attributes = {});
-        // Scop_window& operator=(const Scop_window& copy);
+        Scop_window& operator=(const Scop_window& copy);
         ~Scop_window();
 
         void create_window();
