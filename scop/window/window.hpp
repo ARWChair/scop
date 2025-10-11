@@ -2,6 +2,7 @@
 #include <exception>
 #include <stdbool.h>
 #include <cstring>
+#pragma once
 
 class Scop_window {
     public:
@@ -14,9 +15,11 @@ class Scop_window {
 
         void create_window();
         void hold_open(); //temp
+        Display const *get_display() const;
+        Window const &get_window() const;
+
 
         // Exceptions
-
         class WindowCreationFailed : public std::exception {
             public:
                 virtual const char* what() const throw() {

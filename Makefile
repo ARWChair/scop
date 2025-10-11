@@ -1,7 +1,7 @@
-SRCS = main.cpp
+SRCS = main.cpp scop/vulkan/vulkan.cpp scop/window/window.cpp
 OBJS = $(SRCS:.cpp=.o)
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -lX11
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -lX11 -lvulkan
 NAME = scop
 RM = rm -f
 

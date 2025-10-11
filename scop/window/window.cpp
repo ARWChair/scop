@@ -69,3 +69,11 @@ void Scop_window::hold_open() {
         XNextEvent(main_display, &GeneralEvent);
     }
 }
+
+Display const *Scop_window::get_display() const {
+    return main_display;
+}
+
+Window const &Scop_window::get_window() const {
+    return main_window;
+}
