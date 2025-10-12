@@ -16,6 +16,7 @@ class Scop_vulkan {
 
         void create_surface(Display *display, Window window);
         void setup_devices();
+        void create_queues();
         bool isDeviceSuitable(VkPhysicalDevice device);
         VkInstance const & get_instance() const;
         VkApplicationInfo const & get_appinfo() const;

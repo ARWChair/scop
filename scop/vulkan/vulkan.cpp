@@ -68,10 +68,16 @@ void Scop_vulkan::setup_devices() {
         throw VKPhysicalDeviceExceptions();
 }
 
+void Scop_vulkan::create_queues() {
+    
+}
+
 bool Scop_vulkan::isDeviceSuitable(VkPhysicalDevice device) {
-    //https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Physical_devices_and_queue_families
     VkPhysicalDeviceProperties device_properties;
+    VkPhysicalDeviceFeatures device_features;
     vkGetPhysicalDeviceProperties(device, &device_properties);
+    vkGetPhysicalDeviceFeatures(device, &device_features);
+    return device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && device_features.geometryShader;
 }
 
 
