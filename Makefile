@@ -6,6 +6,7 @@ NAME = scop
 RM = rm -f
 
 all: $(NAME)
+
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 

@@ -48,6 +48,8 @@
         "optional": "cpp",
         "ranges": "cpp",
         "span": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "set": "cpp",
+        "cinttypes": "cpp"
     }
 }

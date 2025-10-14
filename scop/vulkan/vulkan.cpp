@@ -36,7 +36,7 @@ Scop_vulkan& Scop_vulkan::operator=(const Scop_vulkan& copy) {
 }
 
 Scop_vulkan::~Scop_vulkan() {
-    // vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(device);
 }
 
 
@@ -59,7 +59,7 @@ void Scop_vulkan::setup_devices() {
     std::vector<VkPhysicalDevice> devices(devices_count);
     vkEnumeratePhysicalDevices(instance, &devices_count, devices.data());
     for (const auto& device: devices) {
-        if (isDeviceSuitable(device)) {
+        if (is_device_suitable(device)) {
             physicalDevice = device;
             break;
         }
@@ -68,11 +68,56 @@ void Scop_vulkan::setup_devices() {
         throw VKPhysicalDeviceExceptions();
 }
 
+uint32_t Scop_vulkan::get_queue_family() {
+    uint32_t queueFamily = 0;
+    int graphicsFamily = -1;
+
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamily, NULL);
+    VkQueueFamilyProperties queueFamilies[queueFamily];
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamily, queueFamilies);
+    for (uint32_t i = 0; i < queueFamily; i++) {
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            graphicsFamily = i;
+            break;
+        }
+    }
+    return graphicsFamily;
+}
+
 void Scop_vulkan::create_queues() {
+    uint32_t queues_count = get_queue_family();
+    float queue_priority = 1.0f;
+
+    queue_createinfo = {};
+    device_features = {};
+    createinfo = {};
+    queue_createinfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_createinfo.queueFamilyIndex = queues_count;
+    queue_createinfo.queueCount = 1;
+    queue_createinfo.pQueuePriorities = &queue_priority;
+    createinfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createinfo.pQueueCreateInfos = &queue_createinfo;
+    createinfo.queueCreateInfoCount = 1;
+    createinfo.pEnabledFeatures = &device_features;
+}
+
+void Scop_vulkan::create_vk_device() {
+    if (vkCreateDevice(physicalDevice, &createinfo, NULL, &device) != VK_SUCCESS)
+        throw VKDeviceExceptions();
+}
+
+void Scop_vulkan::create_swapchain() {
+    uint32_t format_count;
+
+    surface_capabilities = {};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surface_capabilities);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &format_count, NULL);
+    std::vector<VkSurfaceFormatKHR> formats(format_count);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &format_count, formats.data());
     
 }
 
-bool Scop_vulkan::isDeviceSuitable(VkPhysicalDevice device) {
+bool Scop_vulkan::is_device_suitable(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
     vkGetPhysicalDeviceProperties(device, &device_properties);

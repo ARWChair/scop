@@ -16,8 +16,11 @@ class Scop_vulkan {
 
         void create_surface(Display *display, Window window);
         void setup_devices();
+        uint32_t get_queue_family();
         void create_queues();
-        bool isDeviceSuitable(VkPhysicalDevice device);
+        bool is_device_suitable(VkPhysicalDevice device);
+        void create_vk_device();
+        void create_swapchain();
         VkInstance const & get_instance() const;
         VkApplicationInfo const & get_appinfo() const;
         VkInstanceCreateInfo const & get_instanceinfo() const;
@@ -47,6 +50,13 @@ class Scop_vulkan {
                     return "Failed to find suitable GPU";
                 }
         };
+
+        class VKDeviceExceptions : public std::exception {
+            public:
+                virtual const char* what() const throw() {
+                    return "Failed to create vulkan device";
+                }
+        };
     protected:
     private:
         VkApplicationInfo appinfo;
@@ -55,4 +65,9 @@ class Scop_vulkan {
         VkSurfaceKHR surface;
         VkXlibSurfaceCreateInfoKHR surfaceinfo;
         VkPhysicalDevice physicalDevice;
+        VkDeviceQueueCreateInfo queue_createinfo;
+        VkPhysicalDeviceFeatures device_features;
+        VkDeviceCreateInfo createinfo;
+        VkDevice device;
+        VkSurfaceCapabilitiesKHR surface_capabilities;
 };
