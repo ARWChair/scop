@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "Window.hpp"
 
 Scop_window::Scop_window() {
     main_display = XOpenDisplay(0);
@@ -25,7 +25,7 @@ Scop_window::Scop_window(int x, int y, unsigned int width, unsigned int height, 
     if (visual == NULL)
         visual = CopyFromParent;
     this->visual = visual;
-    this->valuemask = CWBackPixel;
+    this->valuemask = valuemask;
     this->attributes = attributes;
     if (this->attributes.background_pixel == 0)
         this->attributes.background_pixel = 0xffafe9af;

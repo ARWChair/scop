@@ -1,13 +1,15 @@
-SRCS = main.cpp scop/vulkan/vulkan.cpp scop/window/window.cpp
+SRCS = main.cpp ./scop/scop.cpp ./scop/OpenGL/OpenGL.cpp ./scop/Window/Window.cpp
 OBJS = $(SRCS:.cpp=.o)
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -lX11 -lvulkan
-NAME = scop
+CXXFLAGS = -Wall -Wextra -Werror -g
+COMPILE_FLAGS = -lX11 -lGL -lGLU -ldl
+NAME = Scop
 RM = rm -f
 
 all: $(NAME)
+
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS) $(COMPILE_FLAGS)
 
 clean:
 	$(RM) $(OBJS)

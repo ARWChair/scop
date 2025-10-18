@@ -2,14 +2,12 @@
 
 int main() {
     try {
-
         Scop_window window = Scop_window(200, 200, 800, 600);
-        Scop_vulkan vulkan = Scop_vulkan();
-        vulkan.create_surface((Display *)window.get_display(), (Window)window.get_window());
-        // vulkan.log_devices();
-        vulkan.setup_devices();
+        Scop_openGL opengl = Scop_openGL(window.get_display(), 0);
+        opengl.make_current((GLXDrawable)window.get_window());
+        opengl.draw_box();
         window.hold_open();
-    } catch (...) {
-        std::cout << "Error" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
     }
 }
