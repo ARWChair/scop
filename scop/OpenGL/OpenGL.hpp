@@ -16,7 +16,9 @@ class Scop_openGL {
         void create_glx_context();
         void make_current(GLXDrawable drawable);
         void set_display(Display *display);
-        void draw_box();
+        void draw_plane(float rotation);
+
+        GLXDrawable const &get_drawable() const;
         // ---------- Exceptions ---------- \\'
         class GLXBSetupException: public std::exception {
             public:

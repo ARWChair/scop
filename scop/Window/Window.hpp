@@ -1,8 +1,13 @@
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <exception>
 #include <stdbool.h>
 #include <cstring>
+#include <iostream>
+// #include "../draw/draw.hpp"
 #pragma once
+
+class draw;
 
 class Scop_window {
     public:
@@ -17,7 +22,7 @@ class Scop_window {
         void hold_open(); //temp
         Display const *get_display() const;
         Window const &get_window() const;
-
+        void set_drawer(draw* drawer);
 
         // Exceptions
         class WindowCreationFailed : public std::exception {
@@ -36,4 +41,5 @@ class Scop_window {
         Visual *visual;
         XSetWindowAttributes attributes;
         bool created_window; // false if window exists. If not, then Create_New_Window function can execute
+        draw* drawer;
 };

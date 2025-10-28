@@ -4,8 +4,9 @@ int main() {
     try {
         Scop_window window = Scop_window(200, 200, 800, 600);
         Scop_openGL opengl = Scop_openGL(window.get_display(), 0);
+        draw my_draw = draw(opengl, window);
+        window.set_drawer(&my_draw);
         opengl.make_current((GLXDrawable)window.get_window());
-        opengl.draw_box();
         window.hold_open();
     } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;

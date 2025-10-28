@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include "../draw/draw.hpp"
 
 Scop_window::Scop_window() {
     main_display = XOpenDisplay(0);
@@ -60,13 +61,63 @@ void Scop_window::create_window() {
     if (main_window == 0)
         throw WindowCreationFailed();
     XStoreName(main_display, main_window, "Scop");
+    XSelectInput(main_display, main_window, ExposureMask | KeyPressMask);
     XMapWindow(main_display, main_window);
 }
 
 void Scop_window::hold_open() {
+    std::cout << "LEL" << std::endl;
     for(;;) {
-        XEvent GeneralEvent = {};
-        XNextEvent(main_display, &GeneralEvent);
+        XEvent e;
+        XNextEvent(main_display, &e);
+
+        switch (e.type) {
+            case Expose:
+                break;
+            case KeyPress: {
+                KeySym ks = XLookupKeysym(&e.xkey, 0);
+                if (ks == XK_Escape) {
+                    return;
+                }
+                else if (ks == 101) {
+                    if (drawer->get_ud_rotation() <= 0)
+                        drawer->dec_rl_rotation(0.01);
+                    else
+                        drawer->inc_rl_rotation(0.01);
+                    if (drawer->get_rl_rotation() > 0.5)
+                        drawer->dec_ud_rotation(0.01);
+                    else
+                        drawer->inc_ud_rotation(0.01);
+                }
+                else if (ks == 113) {
+                    if (drawer->get_ud_rotation() <= 0)
+                        drawer->inc_rl_rotation(0.01);
+                    else
+                        drawer->dec_rl_rotation(0.01);
+                    if (drawer->get_rl_rotation() > 0.495)
+                        drawer->inc_ud_rotation(0.01);
+                    else
+                        drawer->dec_ud_rotation(0.01);
+                }
+                else if (ks == 119) {
+                    drawer->set_yPos(drawer->get_yPos() + 0.01f);
+                }
+                else if (ks == 115) {
+                    drawer->set_yPos(drawer->get_yPos() + -0.01f);
+                }
+                else if (ks == 97) {
+                    drawer->set_xPos(drawer->get_xPos() + -0.01f);
+                }
+                else if (ks == 100) {
+                    drawer->set_xPos(drawer->get_xPos() + 0.01f);
+                }
+                std::cout << "Key pressed: " << XKeysymToString(ks) << ", " << ks << std::endl;
+                break;
+            }
+            default:
+                break;
+        }
+        drawer->draw_plane(drawer->get_xPos(), drawer->get_yPos());
     }
 }
 
@@ -76,4 +127,8 @@ Display const *Scop_window::get_display() const {
 
 Window const &Scop_window::get_window() const {
     return main_window;
+}
+
+void Scop_window::set_drawer(draw* drawer) {
+    this->drawer = drawer;
 }
