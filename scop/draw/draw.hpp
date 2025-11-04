@@ -1,20 +1,24 @@
 #include <iostream>
 #include "../OpenGL/OpenGL.hpp"
 #include "../Window/Window.hpp"
+#include <vector>
+#include <array>
 #include <cmath>
 #pragma once
 
-class draw {
+class Draw {
     public:
-        draw();
-        draw(Scop_openGL &scop_openGL, Scop_window &scop_window);
-        draw& operator=(const draw& copy);
-        ~draw();
+        Draw();
+        Draw(Scop_openGL &scop_openGL, Scop_window &scop_window);
+        Draw& operator=(const Draw& copy);
+        ~Draw();
 
         void make_current(GLXDrawable drawable);
         void make_current();
         void clear();
+        void set_color(float r, float g, float b);
         void draw_line();
+        void draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos);
         void draw_plane(double xPos, double yPos);
 
         double const &get_ud_rotation() const;

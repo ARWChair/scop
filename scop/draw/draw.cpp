@@ -1,15 +1,16 @@
 #include "draw.hpp"
 #include "../Window/Window.hpp"
+#include "../OpenGL/OpenGL.hpp"
 
-draw::draw():
+Draw::Draw():
 scop_window(*(Scop_window*)0), scop_openGL(*(Scop_openGL*)0), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
 {}
 
-draw::draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
+Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
 scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
 {}
 
-draw& draw::operator=(const draw& copy) {
+Draw& Draw::operator=(const Draw& copy) {
     if (this != &copy) {
         this->scop_openGL = copy.scop_openGL;
         this->scop_window = copy.scop_window;
@@ -19,29 +20,38 @@ draw& draw::operator=(const draw& copy) {
     return *this;
 }
 
-draw::~draw() {}
+Draw::~Draw() {}
 
-void draw::make_current(GLXDrawable drawable) {
+void Draw::make_current(GLXDrawable drawable) {
     scop_openGL.make_current(drawable);
 }
 
-void draw::make_current() {
+void Draw::make_current() {
     scop_openGL.make_current((GLXDrawable)scop_window.get_window());
 }
 
-void draw::clear() {
+void Draw::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void draw::draw_line() {
+void Draw::set_color(float r, float g, float b) {
+    glColor3f(r, g, b);
+}
+
+void Draw::draw_line() {
     glBegin(GL_LINES);
         glVertex3f(-0.5f, 0.0f, 0.0f);
         glVertex3f(0.5f, 0.0f, 0.0f);
     glEnd();
 }
 
-void draw::draw_plane(double xPos, double yPos) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Draw::draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos) {
+    glVertex3f(xPos[0] + this->xPos, xPos[1] + this->yPos, xPos[2]);
+    glVertex3f(yPos[0] + this->xPos, yPos[1] + this->yPos, yPos[2]);
+    glVertex3f(zPos[0] + this->xPos, zPos[1] + this->yPos, zPos[2]);
+}
+
+void Draw::draw_plane(double xPos, double yPos) {
     if (rl_rot < 0.5f && rl_rot > -0.5f)
         glColor3f(0.0f, 1.0f, 0.0f);
     else
@@ -56,46 +66,46 @@ void draw::draw_plane(double xPos, double yPos) {
     glFlush();
 }
 
-void draw::inc_rl_rotation(double delta) {
+void Draw::inc_rl_rotation(double delta) {
     rl_rot += delta;
     rl_rot = std::round(rl_rot * 10000.0) / 10000.0;
 }
 
-void draw::inc_ud_rotation(double delta) {
+void Draw::inc_ud_rotation(double delta) {
     ud_rot += delta;
     ud_rot = std::round(ud_rot * 10000.0) / 10000.0;
 }
 
-void draw::dec_rl_rotation(double delta) {
+void Draw::dec_rl_rotation(double delta) {
     rl_rot -= delta;
     rl_rot = std::round(rl_rot * 10000.0) / 10000.0;
 }
 
-void draw::dec_ud_rotation(double delta) {
+void Draw::dec_ud_rotation(double delta) {
     ud_rot -= delta;
     ud_rot = std::round(ud_rot * 10000.0) / 10000.0;
 }
 
-double const &draw::get_ud_rotation() const {
+double const &Draw::get_ud_rotation() const {
     return ud_rot;
 }
 
-double const &draw::get_rl_rotation() const {
+double const &Draw::get_rl_rotation() const {
     return rl_rot;
 }
 
-double const &draw::get_xPos() const {
+double const &Draw::get_xPos() const {
     return xPos;
 }
 
-double const &draw::get_yPos() const {
+double const &Draw::get_yPos() const {
     return yPos;
 }
 
-void draw::set_xPos(double x) {
+void Draw::set_xPos(double x) {
     xPos = x;
 }
 
-void draw::set_yPos(double y) {
+void Draw::set_yPos(double y) {
     yPos = y;
 }

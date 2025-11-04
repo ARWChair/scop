@@ -1,16 +1,21 @@
 #include "OpenGL.hpp"
 
-Scop_openGL::Scop_openGL() {}
+Scop_openGL::Scop_openGL() {
+    this->done = false;
+}
 
-Scop_openGL::Scop_openGL(const Display *display, int screen) {
+Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int screen) {
     this->done = false;
     if (!display)
         throw DisplayNullException();
     this->display = (Display *)display;
+    this->window = (Scop_window *)window;
     this->screen = screen;
     choose_display_fb_exception();
     create_glx_context();
-    // make_current();
+    make_current(window->get_window());
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     this->done = true;
 }
 
@@ -20,6 +25,7 @@ Scop_openGL& Scop_openGL::operator=(const Scop_openGL& copy) {
         this->fbconfig = copy.fbconfig;
         this->context = copy.context;
         this->display = copy.display;
+        this->window = copy.window;
         this->attrib_list = copy.attrib_list;
         this->nelements = copy.nelements;
         this->screen = copy.screen;
@@ -61,6 +67,17 @@ void Scop_openGL::create_glx_context() {
         throw CreateContextNullException();
 }
 
+void Scop_openGL::create_viewport() {
+    int width = window->get_width(), height = window->get_height();
+
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0, (float)width / (float)height, 0.1, 100.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
 void Scop_openGL::make_current(GLXDrawable drawable) {
     this->drawable = drawable;
     if (glXMakeCurrent(display, drawable, context) != true)
@@ -73,4 +90,8 @@ void Scop_openGL::set_display(Display *display) {
 
 GLXDrawable const &Scop_openGL::get_drawable() const {
     return drawable;
+}
+
+Scop_window const *Scop_openGL::get_window() const {
+    return window;
 }

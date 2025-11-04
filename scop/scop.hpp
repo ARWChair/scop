@@ -1,5 +1,6 @@
 #include "./Window/Window.hpp"
 #include "./OpenGL/OpenGL.hpp"
+#include "./Faces/Faces.hpp"
 #include "./draw/draw.hpp"
 #include <iostream>
 

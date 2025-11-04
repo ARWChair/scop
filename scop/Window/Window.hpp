@@ -7,7 +7,9 @@
 // #include "../draw/draw.hpp"
 #pragma once
 
-class draw;
+class Draw;
+class Faces;
+class Scop_openGL;
 
 class Scop_window {
     public:
@@ -22,8 +24,12 @@ class Scop_window {
         void hold_open(); //temp
         Display const *get_display() const;
         Window const &get_window() const;
-        void set_drawer(draw* drawer);
+        void set_drawer(Draw* drawer);
+        void set_faces(Faces* faces);
+        void set_openGL(Scop_openGL* scop_openGL);
 
+        const unsigned int &get_width() const;
+        const unsigned int &get_height() const;
         // Exceptions
         class WindowCreationFailed : public std::exception {
             public:
@@ -41,5 +47,7 @@ class Scop_window {
         Visual *visual;
         XSetWindowAttributes attributes;
         bool created_window; // false if window exists. If not, then Create_New_Window function can execute
-        draw* drawer;
+        Scop_openGL* scop_openGL;
+        Faces* faces;
+        Draw* drawer;
 };

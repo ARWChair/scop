@@ -1,5 +1,6 @@
 #include "Window.hpp"
 #include "../draw/draw.hpp"
+#include "../Faces/Faces.hpp"
 
 Scop_window::Scop_window() {
     main_display = XOpenDisplay(0);
@@ -66,7 +67,11 @@ void Scop_window::create_window() {
 }
 
 void Scop_window::hold_open() {
-    std::cout << "LEL" << std::endl;
+    std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
+    std::array<std::array<double, 3>, 3> temp_arr;
+    // drawer->draw_triangle(temp_arr[0],temp_arr[1], temp_arr[2]);
+    int pos = 0;
+
     for(;;) {
         XEvent e;
         XNextEvent(main_display, &e);
@@ -99,17 +104,17 @@ void Scop_window::hold_open() {
                     else
                         drawer->dec_ud_rotation(0.01);
                 }
-                else if (ks == 119) {
-                    drawer->set_yPos(drawer->get_yPos() + 0.01f);
+                if (ks == 119) {
+                    drawer->set_yPos(drawer->get_yPos() + 0.1f);
                 }
-                else if (ks == 115) {
-                    drawer->set_yPos(drawer->get_yPos() + -0.01f);
+                if (ks == 115) {
+                    drawer->set_yPos(drawer->get_yPos() + -0.1f);
                 }
-                else if (ks == 97) {
-                    drawer->set_xPos(drawer->get_xPos() + -0.01f);
+                if (ks == 97) {
+                    drawer->set_xPos(drawer->get_xPos() + -0.1f);
                 }
-                else if (ks == 100) {
-                    drawer->set_xPos(drawer->get_xPos() + 0.01f);
+                if (ks == 100) {
+                    drawer->set_xPos(drawer->get_xPos() + 0.1f);
                 }
                 std::cout << "Key pressed: " << XKeysymToString(ks) << ", " << ks << std::endl;
                 break;
@@ -117,8 +122,36 @@ void Scop_window::hold_open() {
             default:
                 break;
         }
-        drawer->draw_plane(drawer->get_xPos(), drawer->get_yPos());
+        // drawer->draw_plane(drawer->get_xPos(), drawer->get_yPos());
+        // ...existing code...
+        drawer->clear();
+        glLoadIdentity();
+        pos = 0;
+        // draw all faces once per frame
+        for (std::vector<std::array<std::array<double, 3>, 3>>::iterator it = f.begin(); it != f.end() && pos < 100; ++it, pos++) {
+            temp_arr = *it;
+            if (pos % 2 == 0)
+                drawer->set_color(0.0f, 1.0f, 0.0f);
+            else
+                drawer->set_color(0.0f, 0.5f, 0.0f);
+        }
+        glBegin(GL_TRIANGLES);
+        for (size_t i = 0; i < f.size(); ++i) {
+            const auto &tri = f[i];
+            if (i % 2 == 0)
+                drawer->set_color(0.0f, 1.0f, 0.0f);
+            else
+                drawer->set_color(0.0f, 0.5f, 0.0f);
+            drawer->draw_triangle(tri[0], tri[1], tri[2]);
+        }
+        glEnd();
+        glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
+        glFlush();
     }
+}
+
+void Scop_window::set_openGL(Scop_openGL* scop_openGL) {
+    this->scop_openGL = scop_openGL;
 }
 
 Display const *Scop_window::get_display() const {
@@ -129,6 +162,18 @@ Window const &Scop_window::get_window() const {
     return main_window;
 }
 
-void Scop_window::set_drawer(draw* drawer) {
+void Scop_window::set_drawer(Draw* drawer) {
     this->drawer = drawer;
+}
+
+void Scop_window::set_faces(Faces* faces) {
+    this->faces = faces;
+}
+
+const unsigned int &Scop_window::get_width() const {
+    return width;
+}
+
+const unsigned int &Scop_window::get_height() const {
+    return height;
 }
