@@ -15,7 +15,11 @@ Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int 
     create_glx_context();
     make_current(window->get_window());
     glEnable(GL_DEPTH_TEST);
+
+    glDepthFunc(GL_LESS);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearDepth(1.0f); 
+    
     this->done = true;
 }
 
@@ -70,12 +74,24 @@ void Scop_openGL::create_glx_context() {
 void Scop_openGL::create_viewport() {
     int width = window->get_width(), height = window->get_height();
 
+    std::cout << "Viewport size: " << width << " x " << height << std::endl; // DEBUG
+    
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    
+    // Korrekte Perspektive
     gluPerspective(45.0, (float)width / (float)height, 0.1, 100.0);
+    
+    // Zur ModelView Matrix wechseln
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    
+    // DEBUG: Prüfe ob Fehler vorliegen
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cout << "OpenGL Error after viewport: " << error << std::endl;
+    }
 }
 
 void Scop_openGL::make_current(GLXDrawable drawable) {

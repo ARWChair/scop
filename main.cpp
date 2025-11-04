@@ -2,8 +2,9 @@
 
 int main() {
     try {
-        Scop_window window = Scop_window(200, 200, 800, 600);
+        Scop_window window = Scop_window(200, 200, 1200, 800);
         Scop_openGL opengl = Scop_openGL(&window, window.get_display(), 0);
+        opengl.create_viewport();
         Draw my_draw = Draw(opengl, window);
         Faces faces = Faces("/home/yannis/Desktop/scop/data/resources/teapot.obj");
         window.set_openGL(&opengl);

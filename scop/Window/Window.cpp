@@ -68,9 +68,7 @@ void Scop_window::create_window() {
 
 void Scop_window::hold_open() {
     std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
-    std::array<std::array<double, 3>, 3> temp_arr;
     // drawer->draw_triangle(temp_arr[0],temp_arr[1], temp_arr[2]);
-    int pos = 0;
 
     for(;;) {
         XEvent e;
@@ -84,25 +82,11 @@ void Scop_window::hold_open() {
                 if (ks == XK_Escape) {
                     return;
                 }
-                else if (ks == 101) {
-                    if (drawer->get_ud_rotation() <= 0)
-                        drawer->dec_rl_rotation(0.01);
-                    else
-                        drawer->inc_rl_rotation(0.01);
-                    if (drawer->get_rl_rotation() > 0.5)
-                        drawer->dec_ud_rotation(0.01);
-                    else
-                        drawer->inc_ud_rotation(0.01);
+                if (ks == 101) { // e key
+                    drawer->inc_rl_rotation(0.025f); // 5 Grad statt 0.01
                 }
-                else if (ks == 113) {
-                    if (drawer->get_ud_rotation() <= 0)
-                        drawer->inc_rl_rotation(0.01);
-                    else
-                        drawer->dec_rl_rotation(0.01);
-                    if (drawer->get_rl_rotation() > 0.495)
-                        drawer->inc_ud_rotation(0.01);
-                    else
-                        drawer->dec_ud_rotation(0.01);
+                else if (ks == 113) { // q key  
+                    drawer->dec_rl_rotation(0.025f);
                 }
                 if (ks == 119) {
                     drawer->set_yPos(drawer->get_yPos() + 0.1f);
@@ -122,19 +106,20 @@ void Scop_window::hold_open() {
             default:
                 break;
         }
-        // drawer->draw_plane(drawer->get_xPos(), drawer->get_yPos());
-        // ...existing code...
         drawer->clear();
+        
+        glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        pos = 0;
-        // draw all faces once per frame
-        for (std::vector<std::array<std::array<double, 3>, 3>>::iterator it = f.begin(); it != f.end() && pos < 100; ++it, pos++) {
-            temp_arr = *it;
-            if (pos % 2 == 0)
-                drawer->set_color(0.0f, 1.0f, 0.0f);
-            else
-                drawer->set_color(0.0f, 0.5f, 0.0f);
-        }
+        
+        gluLookAt(0, 0, 5,
+                  0, 0, 0,
+                  0, 1, 0);
+        glScalef(0.5f, 0.5f, 0.5f);
+        
+        glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
+        glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
+        glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
+        
         glBegin(GL_TRIANGLES);
         for (size_t i = 0; i < f.size(); ++i) {
             const auto &tri = f[i];
