@@ -1,5 +1,5 @@
 #include "Window.hpp"
-#include "../draw/draw.hpp"
+#include "../Draw/Draw.hpp"
 #include "../Faces/Faces.hpp"
 
 Scop_window::Scop_window() {
@@ -68,7 +68,6 @@ void Scop_window::create_window() {
 
 void Scop_window::hold_open() {
     std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
-    // drawer->draw_triangle(temp_arr[0],temp_arr[1], temp_arr[2]);
 
     for(;;) {
         XEvent e;

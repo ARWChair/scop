@@ -8,7 +8,6 @@
 
 class Draw {
     public:
-        Draw();
         Draw(Scop_openGL &scop_openGL, Scop_window &scop_window);
         Draw& operator=(const Draw& copy);
         ~Draw();

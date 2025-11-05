@@ -41,7 +41,7 @@ Scop_openGL& Scop_openGL::operator=(const Scop_openGL& copy) {
 Scop_openGL::~Scop_openGL() {}
 
 void Scop_openGL::choose_display_fb_exception() {
-    const int nitems[] = {
+    static const int nitems[] = {
         GLX_X_RENDERABLE, True,
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -63,31 +63,27 @@ void Scop_openGL::choose_display_fb_exception() {
 }
 
 void Scop_openGL::create_glx_context() {
-    visual_info = glXChooseVisual(display, screen, attrib_list);
+    if (!fbconfig || nelements <= 0)
+        throw VisualInfoNullException();
+
+    visual_info = glXGetVisualFromFBConfig(display, fbconfig[0]);
     if (!visual_info)
         throw VisualInfoNullException();
-    context = glXCreateContext(display, visual_info, NULL, true);
+
+    context = glXCreateContext(display, visual_info, NULL, True);
     if (!context)
         throw CreateContextNullException();
 }
 
 void Scop_openGL::create_viewport() {
     int width = window->get_width(), height = window->get_height();
-
-    std::cout << "Viewport size: " << width << " x " << height << std::endl; // DEBUG
-    
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    
-    // Korrekte Perspektive
     gluPerspective(45.0, (float)width / (float)height, 0.1, 100.0);
-    
-    // Zur ModelView Matrix wechseln
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    // DEBUG: Prüfe ob Fehler vorliegen
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
         std::cout << "OpenGL Error after viewport: " << error << std::endl;

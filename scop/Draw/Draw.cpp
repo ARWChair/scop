@@ -1,10 +1,6 @@
-#include "draw.hpp"
+#include "Draw.hpp"
 #include "../Window/Window.hpp"
 #include "../OpenGL/OpenGL.hpp"
-
-Draw::Draw():
-scop_window(*(Scop_window*)0), scop_openGL(*(Scop_openGL*)0), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
-{}
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
 scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
