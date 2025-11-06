@@ -1,4 +1,4 @@
-SRCS = main.cpp ./scop/scop.cpp ./scop/OpenGL/OpenGL.cpp ./scop/Window/Window.cpp ./scop/Draw/Draw.cpp ./scop/Faces/Faces.cpp
+SRCS = main.cpp ./scop/scop.cpp ./scop/OpenGL/OpenGL.cpp ./scop/Window/Window.cpp ./scop/Draw/Draw.cpp ./scop/Faces/Faces.cpp ./scop/Faces_tree/Faces_tree.cpp
 OBJS = $(SRCS:.cpp=.o)
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -g

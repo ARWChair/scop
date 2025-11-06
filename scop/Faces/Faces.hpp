@@ -18,7 +18,6 @@ class Faces {
         int load_faces_from_array(int pos);
         const std::vector<std::string>& get_lines() const;
         const std::vector<std::array<std::array<double, 3>, 3>>& get_faces() const;
-
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
