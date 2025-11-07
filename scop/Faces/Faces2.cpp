@@ -7,7 +7,7 @@ Faces::Faces(std::string filename) {
     int pos = split_faces_from_lines();
     if (pos < 0)
         throw SplitException();
-    if (load_faces_from_array(pos) < 0) 
+    if (load_faces_from_array(pos) < 0)
         throw ArrangeException();
 }
 

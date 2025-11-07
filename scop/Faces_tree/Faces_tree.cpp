@@ -1,12 +1,17 @@
 #include "Faces_tree.hpp"
 
+Faces_tree::Faces_tree() {}
+
 Faces_tree::Faces_tree(std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 2>>& vn, std::vector<std::array<double, 3>>& vt) {
     tree = create_branch(v, vn, vt);
     if (!tree)
         throw TreeCreateException();
 }
 
-Faces_tree::~Faces_tree() {}
+Faces_tree::~Faces_tree() {
+    if (tree)
+        clear_tree();
+}
 
 obj_node *Faces_tree::create_branch(std::vector<std::array<double, 3>> v, std::vector<std::array<double, 2>> vn, std::vector<std::array<double, 3>> vt) {
     obj_node *root = new obj_node();
@@ -22,8 +27,10 @@ obj_node *Faces_tree::create_branch(std::vector<std::array<double, 3>> v, std::v
 void Faces_tree::add_children(obj_node *base, obj_node *children) {
     if (!base || !children)
         return;
-    if (base->children)
+    if (base->children) {
         base->children->push_back(children);
+        return;
+    }
     base->children = new std::vector<obj_node *>();
     if (!base->children)
         throw ChildrenCreateException();
@@ -33,12 +40,44 @@ void Faces_tree::add_children(obj_node *base, obj_node *children) {
 void Faces_tree::add_children(obj_node *children) {
     if (!children)
         return;
-    if (!tree->children)
+    if (tree->children) {
         tree->children->push_back(children);
+        return;
+    }
     tree->children = new std::vector<obj_node *>();
     if (!tree->children)
         throw ChildrenCreateException();
     tree->children->push_back(children);
+}
+
+void Faces_tree::remove_children(obj_node *base) {
+    if (!base)
+        return;
+    if (base->children) {
+        for (obj_node* child : *base->children) {
+            remove_children(child);
+            delete child;
+        }
+        delete base->children;
+        base->children = nullptr;
+    }
+    base->normals.clear();
+    base->uvs.clear();
+    base->verts.clear();
+}
+
+void Faces_tree::clear_tree_nodes() {
+    if (!tree)
+        return;
+    remove_children(tree);
+    delete tree;
+    tree = nullptr;
+}
+
+void Faces_tree::clear_tree() {
+    clear_tree_nodes();
+    delete tree;
+    tree = NULL;
 }
 
 void print_obj(obj_node *node, int depth) {

@@ -1,5 +1,6 @@
 #include <exception>
 #include <GL/gl.h>
+#include "../Faces_tree/Faces_tree.hpp"
 #include <fstream>   
 #include <sstream>
 #include <iostream>
@@ -14,10 +15,9 @@ class Faces {
         ~Faces();
 
         int load_lanes_from_obj();
-        int split_faces_from_lines();
-        int load_faces_from_array(int pos);
+        int split_parts();
         const std::vector<std::string>& get_lines() const;
-        const std::vector<std::array<std::array<double, 3>, 3>>& get_faces() const;
+        const Faces_tree& get_faces() const;
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
@@ -39,10 +39,10 @@ class Faces {
         };
     private:
         std::vector<std::array<double, 3>> verts;
-        std::vector<std::array<std::array<double, 3>, 3>> faces;
         std::vector<std::string> lines;
         std::string filecontent;
         std::string filename;
+        Faces_tree tree;
 };
 
 // Read whole file
