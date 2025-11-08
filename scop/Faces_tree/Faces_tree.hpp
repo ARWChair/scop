@@ -36,7 +36,7 @@ class Faces_tree {
         void print_list();
         void clear_line(obj_node *);
         void clear_list();
-        obj_node* get_lines();
+        obj_node* get_list();
 
         // ---------- exceptions ---------- \\'
         class TreeCreateException: public std::exception {

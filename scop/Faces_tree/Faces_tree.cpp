@@ -122,6 +122,10 @@ void Faces_tree::clear_list() {
     this->list = nullptr;
 }
 
+obj_node* Faces_tree::get_list() {
+    return list;
+}
+
 // void Faces_tree::add_children(obj_node *base, obj_node *children) {
 //     if (!base || !children)
 //         return;
