@@ -4,11 +4,15 @@
 #include <exception>
 #pragma once
 
-typedef struct obj_node {
+typedef struct inner_elements {
     std::vector<std::array<double, 3>> verts;
     std::vector<std::array<double, 2>> uvs;
     std::vector<std::array<double, 3>> normals;
-    std::vector<obj_node *> *children;
+}               inner_elements;
+
+typedef struct obj_node {
+    std::vector<inner_elements> elements;
+    obj_node *next;
 }               obj_node;
 
 class Faces_tree {
@@ -21,9 +25,19 @@ class Faces_tree {
         void add_children(obj_node *);
         void add_children(obj_node *, obj_node *);
         void print_tree();
-        void remove_children(obj_node *);
+        void remove_children(obj_node *&);
         void clear_tree();
         obj_node* get_tree();
+
+
+        obj_node* create_list(std::vector<std::array<double, 3>>&, std::vector<std::array<double, 2>>&, std::vector<std::array<double, 3>>&);
+        void add_elements(obj_node *, std::vector<std::array<double, 3>>&, std::vector<std::array<double, 2>>&, std::vector<std::array<double, 3>>&);
+        void add_line(obj_node *);
+        void print_list();
+        void clear_line(obj_node *);
+        void clear_list();
+        obj_node* get_lines();
+
         // ---------- exceptions ---------- \\'
         class TreeCreateException: public std::exception {
             public:
@@ -38,6 +52,6 @@ class Faces_tree {
                 }
         };
     private:
-        void clear_tree_nodes();
-        obj_node* tree;
+        // void clear_tree_nodes();
+        obj_node* list;
 };

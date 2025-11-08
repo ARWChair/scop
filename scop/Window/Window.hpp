@@ -24,9 +24,9 @@ class Scop_window {
         void hold_open(); //temp
         Display const *get_display() const;
         Window const &get_window() const;
-        void set_drawer(Draw* drawer);
-        void set_faces(Faces* faces);
-        void set_openGL(Scop_openGL* scop_openGL);
+        void set_drawer(Draw*& drawer);
+        void set_faces(Faces*& faces);
+        void set_openGL(Scop_openGL*& scop_openGL);
 
         const unsigned int &get_width() const;
         const unsigned int &get_height() const;

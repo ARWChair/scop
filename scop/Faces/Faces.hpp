@@ -9,13 +9,21 @@
 #include <array>
 #pragma once
 
+typedef struct v_vn_vt {
+    std::vector<std::vector<double>> v_full;
+    std::vector<std::vector<double>> vn_full;
+    std::vector<std::vector<double>> vt_full;
+}               v_vn_vt;
+
 class Faces {
     public:
         Faces(std::string filename);
         ~Faces();
 
         int load_lanes_from_obj();
-        int split_parts();
+        v_vn_vt *split_parts();
+        std::vector<std::vector<std::string>> get_faces_indexes();
+        int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         const std::vector<std::string>& get_lines() const;
         const Faces_tree& get_faces() const;
         // ---------- Exception ---------- \\'

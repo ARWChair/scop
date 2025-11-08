@@ -67,74 +67,74 @@ void Scop_window::create_window() {
 }
 
 void Scop_window::hold_open() {
-    std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
+    // std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
 
     for(;;) {
-        XEvent e;
-        XNextEvent(main_display, &e);
+        // XEvent e;
+        // XNextEvent(main_display, &e);
 
-        switch (e.type) {
-            case Expose:
-                break;
-            case KeyPress: {
-                KeySym ks = XLookupKeysym(&e.xkey, 0);
-                if (ks == XK_Escape) {
-                    return;
-                }
-                if (ks == 101) { // e key
-                    drawer->inc_rl_rotation(0.025f); // 5 Grad statt 0.01
-                }
-                else if (ks == 113) { // q key  
-                    drawer->dec_rl_rotation(0.025f);
-                }
-                if (ks == 119) {
-                    drawer->set_yPos(drawer->get_yPos() + 0.1f);
-                }
-                if (ks == 115) {
-                    drawer->set_yPos(drawer->get_yPos() + -0.1f);
-                }
-                if (ks == 97) {
-                    drawer->set_xPos(drawer->get_xPos() + -0.1f);
-                }
-                if (ks == 100) {
-                    drawer->set_xPos(drawer->get_xPos() + 0.1f);
-                }
-                std::cout << "Key pressed: " << XKeysymToString(ks) << ", " << ks << std::endl;
-                break;
-            }
-            default:
-                break;
-        }
-        drawer->clear();
+        // switch (e.type) {
+        //     case Expose:
+        //         break;
+        //     case KeyPress: {
+        //         KeySym ks = XLookupKeysym(&e.xkey, 0);
+        //         if (ks == XK_Escape) {
+        //             return;
+        //         }
+        //         if (ks == 101) { // e key
+        //             drawer->inc_rl_rotation(0.025f); // 5 Grad statt 0.01
+        //         }
+        //         else if (ks == 113) { // q key  
+        //             drawer->dec_rl_rotation(0.025f);
+        //         }
+        //         if (ks == 119) {
+        //             drawer->set_yPos(drawer->get_yPos() + 0.1f);
+        //         }
+        //         if (ks == 115) {
+        //             drawer->set_yPos(drawer->get_yPos() + -0.1f);
+        //         }
+        //         if (ks == 97) {
+        //             drawer->set_xPos(drawer->get_xPos() + -0.1f);
+        //         }
+        //         if (ks == 100) {
+        //             drawer->set_xPos(drawer->get_xPos() + 0.1f);
+        //         }
+        //         std::cout << "Key pressed: " << XKeysymToString(ks) << ", " << ks << std::endl;
+        //         break;
+        //     }
+        //     default:
+        //         break;
+        // }
+        // drawer->clear();
         
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        // glMatrixMode(GL_MODELVIEW);
+        // glLoadIdentity();
         
-        gluLookAt(0, 0, 5,
-                  0, 0, 0,
-                  0, 1, 0);
-        glScalef(0.5f, 0.5f, 0.5f);
+        // gluLookAt(0, 0, 5,
+        //           0, 0, 0,
+        //           0, 1, 0);
+        // glScalef(0.5f, 0.5f, 0.5f);
         
-        glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
-        glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
-        glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
+        // glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
+        // glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
+        // glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
         
-        glBegin(GL_TRIANGLES);
-        for (size_t i = 0; i < f.size(); ++i) {
-            const auto &tri = f[i];
-            if (i % 2 == 0)
-                drawer->set_color(0.0f, 1.0f, 0.0f);
-            else
-                drawer->set_color(0.0f, 0.5f, 0.0f);
-            drawer->draw_triangle(tri[0], tri[1], tri[2]);
-        }
-        glEnd();
-        glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
-        glFlush();
+        // glBegin(GL_TRIANGLES);
+        // for (size_t i = 0; i < f.size(); ++i) {
+        //     const auto &tri = f[i];
+        //     if (i % 2 == 0)
+        //         drawer->set_color(0.0f, 1.0f, 0.0f);
+        //     else
+        //         drawer->set_color(0.0f, 0.5f, 0.0f);
+        //     drawer->draw_triangle(tri[0], tri[1], tri[2]);
+        // }
+        // glEnd();
+        // glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
+        // glFlush();
     }
 }
 
-void Scop_window::set_openGL(Scop_openGL* scop_openGL) {
+void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {
     this->scop_openGL = scop_openGL;
 }
 
@@ -146,11 +146,11 @@ Window const &Scop_window::get_window() const {
     return main_window;
 }
 
-void Scop_window::set_drawer(Draw* drawer) {
+void Scop_window::set_drawer(Draw*& drawer) {
     this->drawer = drawer;
 }
 
-void Scop_window::set_faces(Faces* faces) {
+void Scop_window::set_faces(Faces*& faces) {
     this->faces = faces;
 }
 

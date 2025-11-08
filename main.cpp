@@ -6,7 +6,7 @@ int main() {
     //     Scop_openGL opengl = Scop_openGL(&window, window.get_display(), 0);
     //     opengl.create_viewport();
     //     Draw my_draw = Draw(opengl, window);
-    //     Faces faces = Faces("../scop/data/resources/teapot2.obj");
+        Faces faces = Faces("../scop/data/resources/42.obj");
     //     window.set_openGL(&opengl);
     //     window.set_drawer(&my_draw);
     //     window.set_faces(&faces);
@@ -18,24 +18,24 @@ int main() {
     // Faces faces = Faces("../scop/data/resources/teapot2.obj");
     // (void)filename;
 
-    std::array<double, 3> va = {1.000, 2.101, 3.0001};
-    std::array<double, 2> vna = {0.49494, 4.29292};
-    std::array<double, 3> vta = {2.0003, 2.34545, 2.3434};
-    std::vector<std::array<double, 3>> v;
-    std::vector<std::array<double, 2>> vn;
-    std::vector<std::array<double, 3>> vt;
-    v.push_back(va);
-    vn.push_back(vna);
-    vt.push_back(vta);
+    // std::array<double, 3> va = {1.000, 2.101, 3.0001};
+    // std::array<double, 2> vna = {0.49494, 4.29292};
+    // std::array<double, 3> vta = {2.0003, 2.34545, 2.3434};
+    // std::vector<std::array<double, 3>> v;
+    // std::vector<std::array<double, 2>> vn;
+    // std::vector<std::array<double, 3>> vt;
+    // v.push_back(va);
+    // vn.push_back(vna);
+    // vt.push_back(vta);
 
-    Faces_tree tree = Faces_tree(v, vn, vt);
+    // Faces_tree tree = Faces_tree(v, vn, vt);
     
-    obj_node* b1 = tree.create_branch(v, vn, vt);
-    obj_node* b2 = tree.create_branch(v, vn, vt);
-    obj_node* b3 = tree.create_branch(v, vn, vt);
-    std::vector<obj_node *> children;
-    tree.add_children(b1);
-    tree.add_children(b2);
-    tree.add_children(b3);
-    tree.print_tree();
+    // obj_node* b1 = tree.create_branch(v, vn, vt);
+    // obj_node* b2 = tree.create_branch(v, vn, vt);
+    // obj_node* b3 = tree.create_branch(v, vn, vt);
+    // std::vector<obj_node *> children;
+    // tree.add_children(b1);
+    // tree.add_children(b2);
+    // tree.add_children(b3);
+    // tree.print_tree();
 }
