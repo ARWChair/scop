@@ -6,7 +6,7 @@ int main() {
     //     Scop_openGL opengl = Scop_openGL(&window, window.get_display(), 0);
     //     opengl.create_viewport();
     //     Draw my_draw = Draw(opengl, window);
-        Faces faces = Faces("../scop/data/resources/42.obj");
+        Faces faces = Faces("../scop/data/resources/test-cube.obj");
     //     window.set_openGL(&opengl);
     //     window.set_drawer(&my_draw);
     //     window.set_faces(&faces);

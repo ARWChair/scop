@@ -2,8 +2,8 @@
 
 Faces_tree::Faces_tree(): list(NULL) {}
 
-Faces_tree::Faces_tree(std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 2>>& vn, std::vector<std::array<double, 3>>& vt): list(NULL) {
-    list = create_branch(v, vn, vt);
+Faces_tree::Faces_tree(std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 3>>& vn, std::vector<std::array<double, 2>>& vt): list(NULL) {
+    list = create_list(v, vn, vt);
     if (!list)
         throw TreeCreateException();
 }
@@ -13,7 +13,7 @@ Faces_tree::~Faces_tree() {
         clear_list();
 }
 
-obj_node *Faces_tree::create_list(std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 2>>& vn, std::vector<std::array<double, 3>>& vt) {
+obj_node *Faces_tree::create_list(std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 3>>& vn, std::vector<std::array<double, 2>>& vt) {
     obj_node *root = new obj_node();
     if (root) {
         inner_elements element;
@@ -25,7 +25,7 @@ obj_node *Faces_tree::create_list(std::vector<std::array<double, 3>>& v, std::ve
     return root;
 }
 
-void Faces_tree::add_elements(obj_node *element, std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 2>>& vn, std::vector<std::array<double, 3>>& vt) {
+void Faces_tree::add_elements(obj_node *element, std::vector<std::array<double, 3>>& v, std::vector<std::array<double, 3>>& vn, std::vector<std::array<double, 2>>& vt) {
     inner_elements inner;
 
     inner.verts = v;
@@ -87,7 +87,8 @@ void Faces_tree::print_list() {
 }
 
 void Faces_tree::clear_line(obj_node *to_remove) {
-    if (!this->list || !to_remove) return;
+    if (!this->list || !to_remove)
+        return;
 
     if (this->list == to_remove) {
         obj_node *temp = this->list;
@@ -120,6 +121,30 @@ void Faces_tree::clear_list() {
     }
     
     this->list = nullptr;
+}
+
+void Faces_tree::set_v(std::vector<std::array<double, 3>>& v) {
+    list->elements.front().verts = v;
+}
+
+void Faces_tree::set_v(std::vector<std::array<double, 3>>& v, obj_node *&node) {
+    node->elements.front().verts = v;
+}
+
+void Faces_tree::set_vn(std::vector<std::array<double, 2>>& vn) {
+    list->elements.front().normals = vn;
+}
+
+void Faces_tree::set_vn(std::vector<std::array<double, 2>>& vn, obj_node *&node) {
+    node->elements.front().normals = vn;
+}
+
+void Faces_tree::set_vt(std::vector<std::array<double, 3>>& vt) {
+    list->elements.front().uvs = vt;
+}
+
+void Faces_tree::set_vt(std::vector<std::array<double, 3>>& vt, obj_node *& node) {
+    node->elements.front().uvs = vt;
 }
 
 obj_node* Faces_tree::get_list() {
@@ -222,6 +247,6 @@ obj_node* Faces_tree::get_list() {
 //     print_obj(list, 0);
 // }
 
-obj_node *Faces_tree::get_tree() {
-    return list;
-}
+// obj_node *Faces_tree::get_tree() {
+//     return list;
+// }

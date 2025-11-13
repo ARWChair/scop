@@ -11,9 +11,15 @@
 
 typedef struct v_vn_vt {
     std::vector<std::vector<double>> v_full;
-    std::vector<std::vector<double>> vn_full;
     std::vector<std::vector<double>> vt_full;
+    std::vector<std::vector<double>> vn_full;
 }               v_vn_vt;
+
+typedef struct v_vn_vt_layer {
+    std::vector<double> v_full;
+    std::vector<double> vt_full;
+    std::vector<double> vn_full;
+}               v_vn_vt_layer;
 
 class Faces {
     public:
@@ -25,7 +31,7 @@ class Faces {
         std::vector<std::vector<std::string>> get_faces_indexes();
         int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         const std::vector<std::string>& get_lines() const;
-        const Faces_tree& get_faces() const;
+        const Faces_tree& get_list() const;
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
@@ -50,7 +56,7 @@ class Faces {
         std::vector<std::string> lines;
         std::string filecontent;
         std::string filename;
-        Faces_tree tree;
+        Faces_tree list;
 };
 
 // Read whole file

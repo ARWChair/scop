@@ -37,6 +37,8 @@ v_vn_vt *Faces::split_parts() {
         std::istringstream ss(*it);
         ss >> l;
         iden = l;
+        if (iden != "v" && iden != "vn" && iden != "vt")
+            continue;
         while (ss >> l) {
             if (iden == "v")
                 v.push_back(std::stod(l));
@@ -50,9 +52,9 @@ v_vn_vt *Faces::split_parts() {
             v.clear();
         } else if (vn.size() != 0) {
             elements->vn_full.push_back(vn);
-            vt.clear();
+            vn.clear();
         } else if (vt.size() != 0) {
-            elements->vn_full.push_back(vt);
+            elements->vt_full.push_back(vt);
             vt.clear();
         }
     }
@@ -70,30 +72,87 @@ std::vector<std::vector<std::string>> Faces::get_faces_indexes() {
         iden = l;
         if (iden != "f")
             continue;
-        while (ss >> l) {
+        while (ss >> l)
             row.push_back(l);
-            std::cout << l << ", ";
-        }
-        std::cout << std::endl;
         f_elements.push_back(row);
         row.clear();
     }
-    std::cout << "Size: " << f_elements.size() << std::endl;
     return f_elements;
 }
 
-int Faces::split_in_tree(v_vn_vt *& elements, std::vector<std::vector<std::string>>& face_indexes) {
-    for (std::vector<std::vector<std::string>>::iterator it = face_indexes.begin(); it != face_indexes.end(); it++) {
-        
+std::vector<std::string> split(std::string &str, char c) {
+    std::vector<std::string> returned;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, c)) {
+        returned.push_back(token);
+    }
+    return returned;
+}
+
+v_vn_vt_layer check_and_split(std::vector<std::string>& row) {
+    v_vn_vt_layer temp;
+    std::vector<std::string> check;
+    std::vector<std::string>::iterator inner;
+
+    for (std::vector<std::string>::iterator it = row.begin(); it != row.end(); it++) {
+        check = split(*it, '/');
+        inner = check.begin();
+        temp.v_full.push_back(std::stod(*inner));
+        if (check.size() == 1)
+            continue;
+        inner++;
+        if (inner->length() != 0)
+            temp.vt_full.push_back(std::stod(*inner));
+        inner++;
+        if (inner->length() != 0)
+            temp.vn_full.push_back(std::stod(*inner));
+    }
+    return temp;
+}
+
+inner_elements get_indices_verts_normals(v_vn_vt_layer& row, v_vn_vt*& elements) {
+    inner_elements elem;
+    // std::array<double, 3> v;
+    // std::array<double, 3> vt;
+    // std::array<double, 2> vn;
+
+    for (std::vector<std::vector<double>>::iterator it = elements->vn_full.begin(); it != elements->vn_full.end(); it++) {
+        for (std::vector<double>::iterator inner = it->begin(); inner != it->end(); inner++)
+            std::cout << *inner << ", ";
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    for (std::vector<double>::iterator it = row.v_full.begin(); it != row.v_full.end(); it++) {
+        std::cout << *it << ", " << elements->v_full.begin()->front() << std::endl;
+    }
+    std::cout << *row.v_full.begin() << ", " << row.v_full.size() << std::endl;
+    return elem;
+}
+
+int Faces::split_in_tree(v_vn_vt*& elements, std::vector<std::vector<std::string>>& face_indexes) {
+    inner_elements elems;
+    list = Faces_tree();
+    int i = 0;
+
+    for (std::vector<std::vector<std::string>>::iterator it = face_indexes.begin(); it != face_indexes.end(); it++, i++) {
+        v_vn_vt_layer row = check_and_split(*it);
+        elems = get_indices_verts_normals(row, elements);
+        if (i == 0) {
+            // list.set_v(row.v_full);
+        }
+        std::cout << row.v_full.size() << ", " << row.vn_full.size() << ", " << row.vt_full.size() << std::endl;
+        break;
     }
     delete elements;
-    return 0;
+    return i;
 }
 
 const std::vector<std::string>& Faces::get_lines() const {
     return lines;
 }
 
-const Faces_tree& Faces::get_faces() const {
-    return tree;
+const Faces_tree& Faces::get_list() const {
+    return list;
 }

@@ -67,7 +67,7 @@ void Scop_window::create_window() {
 }
 
 void Scop_window::hold_open() {
-    // std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_faces();
+    // std::vector<std::array<std::array<double, 3>, 3>> f = faces->get_list();
 
     for(;;) {
         // XEvent e;

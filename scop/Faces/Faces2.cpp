@@ -81,6 +81,6 @@ int Faces::load_faces_from_array(int pos) {
     return 0;
 }
 
-const std::vector<std::array<std::array<double, 3>, 3>>& Faces::get_faces() const {
+const std::vector<std::array<std::array<double, 3>, 3>>& Faces::get_list() const {
     return faces;
 }
