@@ -121,16 +121,24 @@ void Scop_window::hold_open() {
         glBegin(GL_TRIANGLES);
         int amount = 0;
         std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = converted_vn.begin();
-        for (std::vector<std::vector<std::array<double, 3>>>::iterator it = converted_v.begin(); it != converted_v.end(); it++) {
+        std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = converted_vt.begin();
+        for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = converted_v.begin(); it_1 != converted_v.end(); it_1++) {
             if (amount % 2 == 0)
                 drawer->set_color(0.0f, 1.0f, 0.0f);
             else
                 drawer->set_color(0.0f, 0.5f, 0.0f);
-            if (it_2 == converted_vn.end())
-                drawer->draw_triangle((it->begin())[0], (it->begin())[1], (it->begin())[2]);
-            else {
-                drawer->draw_triangle((it->begin())[0], (it->begin())[1], (it->begin())[2], (it_2->begin())[0]);
+            if (it_2 == converted_vn.end() && it_3 == converted_vt.end())
+                drawer->draw_triangle(*it_1);
+            else if (it_3 == converted_vt.end()) {
+                drawer->draw_triangle(*it_1, *it_2->begin());
                 it_2++;
+            } else if (it_2 == converted_vn.end()) {
+                drawer->draw_triangle(*it_1, *it_3);
+                it_3++;
+            } else {
+                drawer->draw_triangle(*it_1, *it_2->begin(), *it_3);
+                it_2++;
+                it_3++;
             }
             amount++;
         }

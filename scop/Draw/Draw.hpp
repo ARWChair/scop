@@ -16,10 +16,10 @@ class Draw {
         void make_current();
         void clear();
         void set_color(float r, float g, float b);
-        void draw_line();
-        void draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos, std::array<double, 3> vn);
-        void draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos);
-        void draw_plane(double xPos, double yPos);
+        void draw_triangle(std::vector<std::array<double, 3>>, std::array<double, 3> vn, std::vector<std::array<double, 2>> vt);
+        void draw_triangle(std::vector<std::array<double, 3>>, std::array<double, 3> vn);
+        void draw_triangle(std::vector<std::array<double, 3>>, std::vector<std::array<double, 2>> vt);
+        void draw_triangle(std::vector<std::array<double, 3>> v);
 
         double const &get_ud_rotation() const;
         double const &get_rl_rotation() const;

@@ -34,39 +34,54 @@ void Draw::set_color(float r, float g, float b) {
     glColor3f(r, g, b);
 }
 
-void Draw::draw_line() {
-    glBegin(GL_LINES);
-        glVertex3f(-0.5f, 0.0f, 0.0f);
-        glVertex3f(0.5f, 0.0f, 0.0f);
-    glEnd();
-}
-
-void Draw::draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos, std::array<double, 3> vn) {
+void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::array<double, 3> vn, std::vector<std::array<double, 2>> vt) {
+    std::vector<std::array<double, 3>>::iterator it = v.begin();
+    std::vector<std::array<double, 2>>::iterator it_2 = vt.begin();
     glNormal3f(vn[0], vn[1], vn[2]);
-    glVertex3f(xPos[0], xPos[1], xPos[2]);
-    glVertex3f(yPos[0], yPos[1], yPos[2]);
-    glVertex3f(zPos[0], zPos[1], zPos[2]);
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    it_2++;
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    it_2++;
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
-void Draw::draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos) {
-    glVertex3f(xPos[0], xPos[1], xPos[2]);
-    glVertex3f(yPos[0], yPos[1], yPos[2]);
-    glVertex3f(zPos[0], zPos[1], zPos[2]);
+void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::vector<std::array<double, 2>> vt) {
+    std::vector<std::array<double, 3>>::iterator it = v.begin();
+    std::vector<std::array<double, 2>>::iterator it_2 = vt.begin();
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    it_2++;
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    it_2++;
+    glTexCoord2f((*it_2)[0], (*it_2)[1]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
-void Draw::draw_plane(double xPos, double yPos) {
-    if (rl_rot < 0.5f && rl_rot > -0.5f)
-        glColor3f(0.0f, 1.0f, 0.0f);
-    else
-        glColor3f(1.0f, 0.0f, 0.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(-0.5f + xPos + rl_rot, -0.5f + yPos - ud_rot / 2);
-    glVertex2f(0.5f + xPos - rl_rot, -0.5f + yPos + ud_rot / 2);
-    glVertex2f(0.5f + xPos - rl_rot, 0.5f + yPos - ud_rot / 2);
-    glVertex2f(-0.5f + xPos + rl_rot, 0.5f + yPos + ud_rot / 2);
-    glEnd();
-    glXSwapBuffers((Display *)scop_window.get_display(), scop_openGL.get_drawable());
-    glFlush();
+void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::array<double, 3> vn) {
+    std::vector<std::array<double, 3>>::iterator it = v.begin();
+    glNormal3f(vn[0], vn[1], vn[2]);
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+}
+
+void Draw::draw_triangle(std::vector<std::array<double, 3>> v) {
+    std::vector<std::array<double, 3>>::iterator it = v.begin();
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+    it++;
+    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
 void Draw::inc_rl_rotation(double delta) {
