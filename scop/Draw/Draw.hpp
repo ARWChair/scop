@@ -17,6 +17,7 @@ class Draw {
         void clear();
         void set_color(float r, float g, float b);
         void draw_line();
+        void draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos, std::array<double, 3> vn);
         void draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos);
         void draw_plane(double xPos, double yPos);
 

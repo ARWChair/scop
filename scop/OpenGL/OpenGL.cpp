@@ -14,11 +14,13 @@ Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int 
     choose_display_fb_exception();
     create_glx_context();
     make_current(window->get_window());
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
     glEnable(GL_DEPTH_TEST);
 
     glDepthFunc(GL_LESS);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClearDepth(1.0f); 
+    glClearDepth(1.0f);
     
     this->done = true;
 }

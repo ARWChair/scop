@@ -39,7 +39,7 @@ int Faces::split_faces_from_lines() {
             for (int i = 0; i < 3; ++i) {
                 s >> vertex[i];
             }
-            verts.push_back(vertex);
+            v.push_back(vertex);
         } else {
             pos++;
             if (done == true)
@@ -70,9 +70,9 @@ int Faces::load_faces_from_array(int pos) {
             std::istringstream s(*it);
             std::string temp;
             s >> temp >> f1 >> f2 >> f3;
-            temp_arr[0] = verts[f1 - 1];
-            temp_arr[1] = verts[f2 - 1];
-            temp_arr[2] = verts[f3 - 1];
+            temp_arr[0] = v[f1 - 1];
+            temp_arr[1] = v[f2 - 1];
+            temp_arr[2] = v[f3 - 1];
             faces.push_back(temp_arr);
         } else {
             break;

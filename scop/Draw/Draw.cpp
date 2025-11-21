@@ -41,6 +41,13 @@ void Draw::draw_line() {
     glEnd();
 }
 
+void Draw::draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos, std::array<double, 3> vn) {
+    glNormal3f(vn[0], vn[1], vn[2]);
+    glVertex3f(xPos[0], xPos[1], xPos[2]);
+    glVertex3f(yPos[0], yPos[1], yPos[2]);
+    glVertex3f(zPos[0], zPos[1], zPos[2]);
+}
+
 void Draw::draw_triangle(std::array<double, 3> xPos, std::array<double, 3> yPos, std::array<double, 3> zPos) {
     glVertex3f(xPos[0], xPos[1], xPos[2]);
     glVertex3f(yPos[0], yPos[1], yPos[2]);
