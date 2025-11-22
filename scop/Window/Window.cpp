@@ -1,6 +1,7 @@
 #include "Window.hpp"
 #include "../Draw/Draw.hpp"
 #include "../Faces/Faces.hpp"
+#include "../Material/Material.hpp"
 
 Scop_window::Scop_window() {
     main_display = XOpenDisplay(0);
@@ -168,6 +169,10 @@ void Scop_window::set_drawer(Draw*& drawer) {
 
 void Scop_window::set_faces(Faces*& faces) {
     this->faces = faces;
+}
+
+void Scop_window::set_material(Material*& material) {
+    this->material = material;
 }
 
 const unsigned int &Scop_window::get_width() const {

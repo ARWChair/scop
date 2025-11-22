@@ -1,4 +1,5 @@
 #include "./Faces_list/Faces_list.hpp"
+#include "./Material/Material.hpp"
 #include "./Window/Window.hpp"
 #include "./OpenGL/OpenGL.hpp"
 #include "./Faces/Faces.hpp"

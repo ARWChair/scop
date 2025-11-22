@@ -5,6 +5,7 @@ Faces::Faces(std::string filename) {
     this->list = NULL;
     this->amount = 0;
 
+    this->filename += ".obj";
     if (load_lanes_from_obj() == -1)
         throw LoadException();
     v_vn_vt* elements = split_parts();

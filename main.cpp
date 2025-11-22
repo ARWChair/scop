@@ -1,40 +1,70 @@
 #include "scop/scop.hpp"
 
-int main() {
+int main(int argc, char **argv) {
+    Scop_window *window = nullptr;
+    Scop_openGL *opengl = nullptr;
+    Draw *draw = nullptr;
+    Faces *faces = nullptr;
+    Material *material = nullptr;
+
+    if (argc != 2) {
+        std::cout << "Input filename to start" << std::endl;
+        return 1;
+    }
+
     try {
-        Scop_window *window = new Scop_window(200, 200, 1200, 800);
-        if (!window) {
-            std::cout << "Error. Window allocation failed" << std::endl;
+        window = new Scop_window(200, 200, 1200, 800);
+        if (window == nullptr) {
+            std::cerr << "Error. Window allocation failed" << std::endl;
             return 1;
         }
-        Scop_openGL *opengl = new Scop_openGL(window, window->get_display(), 0);
-        if (!opengl) {
-            std::cout << "Error. OpenGL allocation failed" << std::endl;
-            delete window;
-            return 1;
+        opengl = new Scop_openGL(window, window->get_display(), 0);
+        if (opengl == nullptr) {
+            std::cerr << "Error. OpenGL allocation failed" << std::endl;
+            goto delete_all_error;
         }
         opengl->create_viewport();
-        Draw *my_draw = new Draw(*opengl, *window);
-        if (!my_draw) {
-            std::cout << "Error. Draw allocation failed" << std::endl;
-            delete opengl;
-            delete window;
-            return 1;
+        draw = new Draw(*opengl, *window);
+        if (draw == nullptr) {
+            std::cerr << "Error. Draw allocation failed" << std::endl;
+            goto delete_all_error;
         }
-        Faces *faces = new Faces("../scop/data/resources/test-cube.obj");
-        if (!faces) {
-            std::cout << "Error. Draw allocation failed" << std::endl;
-            delete my_draw;
-            delete opengl;
-            delete window;
-            return 1;
+        faces = new Faces(argv[1]);
+        if (faces == nullptr) {
+            std::cerr << "Error. Draw allocation failed" << std::endl;
+            goto delete_all_error;
+        }
+        material = new Material(argv[1]);
+        if (material == nullptr) {
+            std::cerr << "Error. Material allocation failed" << std::endl;
+            goto delete_all_error;
         }
         window->set_openGL(opengl);
-        window->set_drawer(my_draw);
+        window->set_drawer(draw);
         window->set_faces(faces);
+        window->set_material(material);
         opengl->make_current((GLXDrawable)window->get_window());
         window->hold_open();
     } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
     }
+    delete material;
+    delete faces;
+    delete draw;
+    delete opengl;
+    delete window;
+    return 0;
+
+    delete_all_error:
+        if (material != nullptr)
+            delete material;
+        if (faces != nullptr)
+            delete faces;
+        if (draw != nullptr)
+            delete draw;
+        if (opengl != nullptr)
+            delete opengl;
+        if (window != nullptr)
+            delete window;
+        return 1;
 }
