@@ -27,6 +27,7 @@ public:
     const std::array<double, 1> &get_sharpness() const;
     const std::array<int, 1> &get_illum() const;
     const std::string &get_map_Kd() const;
+    const bool &is_missing() const;
 private:
     std::string filename;
     std::vector<std::string> lines;
@@ -42,4 +43,5 @@ private:
     std::array<double, 1> sharpness;
     std::array<int, 1> illum;
     std::string map_Kd;
+    bool missing;
 };

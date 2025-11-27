@@ -22,6 +22,7 @@ class Scop_window {
 
         void create_window();
         void hold_open(); //temp
+        void setup_face_colors(int face);
         Display const *get_display() const;
         Window const &get_window() const;
         void set_drawer(Draw*& drawer);
@@ -52,4 +53,5 @@ class Scop_window {
         Material *material;
         Faces* faces;
         Draw* drawer;
+        bool toggle;
 };

@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
         std::cout << "Input filename to start" << std::endl;
         return 1;
     }
-
+    (void)argv;
     try {
         window = new Scop_window(200, 200, 1200, 800);
         if (window == nullptr) {

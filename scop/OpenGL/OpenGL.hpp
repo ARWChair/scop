@@ -18,6 +18,7 @@ class Scop_openGL {
         void create_glx_context();
         void make_current(GLXDrawable drawable);
         void create_viewport();
+        void create_lighting();
         void set_display(Display *display);
         void draw_plane(float rotation);
 
@@ -62,7 +63,6 @@ class Scop_openGL {
         Scop_window *window;
         GLXContext context;
         Display *display;
-        int *attrib_list;
         int nelements;
         int screen;
         bool done;

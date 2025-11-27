@@ -9,6 +9,7 @@ Scop_window::Scop_window() {
     x = y = width = height = border_width = ui_class = depth = valuemask = 0;
     visual = CopyFromParent;
     attributes = {};
+    toggle = false;
     created_window = false;
 }
 
@@ -33,6 +34,7 @@ Scop_window::Scop_window(int x, int y, unsigned int width, unsigned int height, 
     if (this->attributes.background_pixel == 0)
         this->attributes.background_pixel = 0xffafe9af;
     create_window();
+    toggle = false;
     created_window = true;
 }
 
@@ -87,11 +89,9 @@ void Scop_window::hold_open() {
     if (vn.size() > 0)
         converted_vn = split_and_group(vn);
 
-
     reallign_highest_point(converted_v, 0);
     reallign_highest_point(converted_v, 1);
     reallign_highest_point(converted_v, 2);
-    // grouping function
 
     XEvent e;
     while(1) {
@@ -100,8 +100,10 @@ void Scop_window::hold_open() {
 
             if (e.type == KeyPress) {
                 KeySym ks = XLookupKeysym(&e.xkey, 0);
-                if (ks == XK_Escape) {
+                if (ks == XK_Escape)
                     return;
+                if (ks == XK_T || ks == XK_t) {
+                    toggle = !toggle;
                 }
             }
         }
@@ -110,34 +112,35 @@ void Scop_window::hold_open() {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         
-        gluLookAt(0, 0, 5,
-                  0, 0, 0,
-                  0, 1, 0);
+        gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
         glScalef(0.5f, 0.5f, 0.5f);
+        
+        GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
+        glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
         
         glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
         glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
         glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
-        
+
         glBegin(GL_TRIANGLES);
         int amount = 0;
         std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = converted_vn.begin();
         std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = converted_vt.begin();
         for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = converted_v.begin(); it_1 != converted_v.end(); it_1++) {
-            if (amount % 2 == 0)
-                drawer->set_color(0.0f, 1.0f, 0.0f);
-            else
-                drawer->set_color(0.0f, 0.5f, 0.0f);
-            if (it_2 == converted_vn.end() && it_3 == converted_vt.end())
-                drawer->draw_triangle(*it_1);
-            else if (it_3 == converted_vt.end()) {
-                drawer->draw_triangle(*it_1, *it_2->begin());
+            if (toggle == false && material->is_missing() == false)
+                setup_face_colors(amount);
+            if (material->is_missing() == true)
+                setup_face_colors(amount);
+            if (it_2 == converted_vn.end() && it_3 == converted_vt.end()) {
+                drawer->draw_triangle(*it_1, material, toggle);
+            } else if (it_3 == converted_vt.end()) {
+                drawer->draw_triangle(*it_1, *it_2->begin(), material, toggle);
                 it_2++;
             } else if (it_2 == converted_vn.end()) {
-                drawer->draw_triangle(*it_1, *it_3);
+                drawer->draw_triangle(*it_1, *it_3, material, toggle);
                 it_3++;
             } else {
-                drawer->draw_triangle(*it_1, *it_2->begin(), *it_3);
+                drawer->draw_triangle(*it_1, *it_2->begin(), *it_3, material, toggle);
                 it_2++;
                 it_3++;
             }
@@ -146,9 +149,21 @@ void Scop_window::hold_open() {
         glEnd();
         glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
         glFlush();
-
         drawer->inc_rl_rotation(0.005f);
     }
+}
+
+void Scop_window::setup_face_colors(int face) {
+    float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
+    float gray = grayValues[face % 6];
+    
+    GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, faceColor);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, faceColor);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, (GLfloat[]){0.0f, 0.0f, 0.0f, 1.0f});
+    glMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
+    glMaterialfv(GL_FRONT, GL_EMISSION, (GLfloat[]){0.0f, 0.0f, 0.0f, 1.0f});
+    glColor3f(gray, gray, gray);
 }
 
 void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {

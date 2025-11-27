@@ -4,6 +4,14 @@ Material::Material(std::string filename) {
     filename += ".mtl";
     set_filename(filename);
     load_entities();
+    if (missing == true) {
+        Kd = {0.8f, 0.8f, 0.8f};
+        Ka = {0.2f, 0.2f, 0.2f};
+        Ks = {0.0f, 0.0f, 0.0f};
+        Ns = {0.0f};
+        d  = {1.0f};
+        return;
+    }
     split();
 }
 
@@ -14,6 +22,10 @@ void Material::load_entities() {
     std::string line;
     std::string temp;
 
+    if (!s.good()) {
+        missing = true;
+        return;
+    }
     while (std::getline(s, line)) {
         std::stringstream ss(line);
         ss >> temp;
@@ -21,6 +33,7 @@ void Material::load_entities() {
             lines.push_back(line);
         }
     }
+    missing = false;
 }
 
 std::string get_map_kd(std::string &line) {
@@ -60,7 +73,6 @@ std::array<double, 3> split_in_array(std::string &line) {
     std::string l;
 
     ss >> l;
-    ss >> l;
     returning[0] = std::stod(l);
     ss >> l;
     returning[1] = std::stod(l);
@@ -76,7 +88,7 @@ void Material::split() {
     for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++) {
         std::stringstream ss(*it);
         ss >> iden;
-        ss >> line;
+        std::getline(ss, line);
         if (iden == "Kd")
             Kd = split_in_array(line);
         else if (iden == "Ka")
@@ -103,6 +115,8 @@ void Material::split() {
             illum = single_array_int(line);
         else if (iden == "map_Kd")
             map_Kd = get_map_kd(line);
+        line = "";
+        iden = "";
     }
 }
 
@@ -164,4 +178,8 @@ const std::array<int, 1> &Material::get_illum() const {
 
 const std::string &Material::get_map_Kd() const {
     return map_Kd;
+}
+
+const bool &Material::is_missing() const {
+    return missing;
 }
