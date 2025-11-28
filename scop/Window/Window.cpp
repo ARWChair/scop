@@ -70,15 +70,14 @@ void Scop_window::create_window() {
 }
 
 void Scop_window::hold_open() {
-    obj_node *node = faces->get_line(0);
+    std::vector<inner_elements> node = faces->get_list();
     std::vector<std::vector<std::array<double, 3>>> v;
     std::vector<std::vector<std::array<double, 3>>> vn;
     std::vector<std::vector<std::array<double, 2>>> vt;
-    while (node) {
-        v.push_back(node->elements.v);
-        vn.push_back(node->elements.vn);
-        vt.push_back(node->elements.vt);
-        node = node->next;
+    for (std::vector<inner_elements>::iterator list_it = node.begin(); list_it != node.end(); list_it++) {
+        v.push_back(list_it->v);
+        vn.push_back(list_it->vn);
+        vt.push_back(list_it->vt);
     }
 
     std::vector<std::vector<std::array<double, 3>>> converted_v = split_and_group(v);
@@ -94,10 +93,16 @@ void Scop_window::hold_open() {
     reallign_highest_point(converted_v, 2);
 
     XEvent e;
+    Atom wmDeleteMessage = XInternAtom(main_display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(main_display, main_window, &wmDeleteMessage, 1);
     while(1) {
         while (XPending(main_display)) {
             XNextEvent(main_display, &e);
-
+            if (e.type == ClientMessage) {
+                if ((Atom)e.xclient.data.l[0] == wmDeleteMessage) {
+                    return;
+                }
+            }
             if (e.type == KeyPress) {
                 KeySym ks = XLookupKeysym(&e.xkey, 0);
                 if (ks == XK_Escape)
@@ -113,7 +118,7 @@ void Scop_window::hold_open() {
         glLoadIdentity();
         
         gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
-        glScalef(0.5f, 0.5f, 0.5f);
+        // glScalef(0.5f, 0.5f, 0.5f);
         
         GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
         glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);

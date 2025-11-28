@@ -6,6 +6,8 @@
 #include <cmath>
 #pragma once
 
+class Faces;
+
 class Draw {
     public:
         Draw(Scop_openGL &scop_openGL, Scop_window &scop_window);
@@ -30,11 +32,13 @@ class Draw {
         void dec_ud_rotation(double delta);
         void inc_rl_rotation(double delta);
         void dec_rl_rotation(double delta);
+        void set_faces(Faces*& faces);
         void set_xPos(double x);
         void set_yPos(double y);
     protected:
     private:
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
+        Faces       *faces;
         double rl_rot, ud_rot, xPos, yPos;
 };

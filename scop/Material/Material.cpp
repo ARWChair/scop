@@ -1,18 +1,16 @@
 #include "Material.hpp"
+#include "../Faces/Faces.hpp"
 
-Material::Material(std::string filename) {
-    filename += ".mtl";
+Material::Material(std::string filename, Faces *&faces) {
+    this->faces = faces;
     set_filename(filename);
     load_entities();
     if (missing == true) {
-        Kd = {0.8f, 0.8f, 0.8f};
-        Ka = {0.2f, 0.2f, 0.2f};
-        Ks = {0.0f, 0.0f, 0.0f};
-        Ns = {0.0f};
-        d  = {1.0f};
-        return;
+        create_mtl_file();
+        load_entities();
     }
     split();
+    check_and_fill();
 }
 
 Material::~Material() {}
@@ -34,6 +32,49 @@ void Material::load_entities() {
         }
     }
     missing = false;
+}
+
+void Material::check_and_fill() {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    bool found = false;
+
+    for (; it != temp.end(); it++) {
+        if (it->name == faces->get_material_from_file()) {
+            break;
+            found = true;
+        }
+    }
+    if (found == true)
+        return;
+    std::ofstream file(filename, std::ios::app);
+    file << "\nnewmtl " << faces->get_material_from_file() << "\n";
+    file << "Ka 0.200000 0.200000 0.200000\n";
+    file << "Kd 0.800000 0.800000 0.800000\n";
+    file << "Ks 0.000000 0.000000 0.000000\n";
+    file << "Ns 0.000000\n";
+    file << "d 1.000000\n";
+    file.close();
+
+    lines.clear();
+    materials.clear();
+    load_entities();
+    split();
+}
+
+void Material::create_mtl_file() {
+    std::ofstream file(filename);
+    if (faces->get_material_from_file().length() == 0)
+        file << "newmtl Material\n";
+    else
+        file << "newmtl " << faces->get_material_from_file() << "\n";
+
+    file << "Ka 0.200000 0.200000 0.200000\n";
+    file << "Kd 0.800000 0.800000 0.800000\n";
+    file << "Ks 0.000000 0.000000 0.000000\n";
+    file << "Ns 0.000000\n";
+    file << "d 1.000000\n";
+    file.close();
 }
 
 std::string get_map_kd(std::string &line) {
@@ -84,40 +125,50 @@ std::array<double, 3> split_in_array(std::string &line) {
 void Material::split() {
     std::string iden;
     std::string line;
+    bool begin = false;
 
+    Materials material;
     for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++) {
         std::stringstream ss(*it);
         ss >> iden;
+        if (iden == "newmtl") {
+            if (begin == true)
+                materials.push_back(material);
+            ss >> line;
+            material.name = line;
+            begin = true;
+        }
         std::getline(ss, line);
         if (iden == "Kd")
-            Kd = split_in_array(line);
+            material.Kd = split_in_array(line);
         else if (iden == "Ka")
-            Ka = split_in_array(line);
+            material.Ka = split_in_array(line);
         else if (iden == "Kd")
-            Kd = split_in_array(line);
+            material.Kd = split_in_array(line);
         else if (iden == "Ks")
-            Ks = split_in_array(line);
+            material.Ks = split_in_array(line);
         else if (iden == "Ke")
-            Ke = split_in_array(line);
+            material.Ke = split_in_array(line);
         else if (iden == "Tf")
-            Tf = split_in_array(line);
+            material.Tf = split_in_array(line);
         else if (iden == "Ns")
-            Ns = single_array_double(line);
+            material.Ns = single_array_double(line);
         else if (iden == "Ni")
-            Ni = single_array_double(line);
+            material.Ni = single_array_double(line);
         else if (iden == "d")
-            d = single_array_double(line);
+            material.d = single_array_double(line);
         else if (iden == "Tr")
-            Tr = single_array_double(line);
+            material.Tr = single_array_double(line);
         else if (iden == "sharpness")
-            sharpness = single_array_double(line);
+            material.sharpness = single_array_double(line);
         else if (iden == "illum")
-            illum = single_array_int(line);
+            material.illum = single_array_int(line);
         else if (iden == "map_Kd")
-            map_Kd = get_map_kd(line);
+            material.map_Kd = get_map_kd(line);
         line = "";
         iden = "";
     }
+    materials.push_back(material);
 }
 
 void Material::set_filename(std::string &filename) {
@@ -132,52 +183,112 @@ const std::vector<std::string> &Material::get_lines() const {
     return lines;
 }
 
-const std::array<double, 3> &Material::get_Kd() const {
-    return Kd;
+const std::array<double, 3> &Material::get_Kd(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Kd;
 }
 
-const std::array<double, 3> &Material::get_Ka() const {
-    return Ka;
+const std::array<double, 3> &Material::get_Ka(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Ka;
 }
 
-const std::array<double, 3> &Material::get_Ks() const {
-    return Ks;
+const std::array<double, 3> &Material::get_Ks(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Ks;
 }
 
-const std::array<double, 3> &Material::get_Ke() const {
-    return Ke;
+const std::array<double, 3> &Material::get_Ke(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Ke;
 }
 
-const std::array<double, 3> &Material::get_Tf() const {
-    return Tf;
+const std::array<double, 3> &Material::get_Tf(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Tf;
 }
 
-const std::array<double, 1> &Material::get_Ns() const {
-    return Ns;
+const std::array<double, 1> &Material::get_Ns(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Ns;
 }
 
-const std::array<double, 1> &Material::get_Ni() const {
-    return Ni;
+const std::array<double, 1> &Material::get_Ni(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+return it->Ni;
 }
 
-const std::array<double, 1> &Material::get_d() const {
-    return d;
+const std::array<double, 1> &Material::get_d(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->d;
 }
 
-const std::array<double, 1> &Material::get_Tr() const {
-    return Tr;
+const std::array<double, 1> &Material::get_Tr(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->Tr;
 }
 
-const std::array<double, 1> &Material::get_sharpness() const {
-    return sharpness;
+const std::array<double, 1> &Material::get_sharpness(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->sharpness;
 }
 
-const std::array<int, 1> &Material::get_illum() const {
-    return illum;
+const std::array<int, 1> &Material::get_illum(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->illum;
 }
 
-const std::string &Material::get_map_Kd() const {
-    return map_Kd;
+const std::string &Material::get_map_Kd(std::string &name) const {
+    std::vector<Materials> temp = materials;
+    std::vector<Materials>::iterator it = temp.begin();
+    for (; it != materials.end(); it++)
+        if (it->name == name)
+            break;
+    return it->map_Kd;
 }
 
 const bool &Material::is_missing() const {

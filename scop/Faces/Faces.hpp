@@ -1,6 +1,5 @@
 #include <exception>
 #include <GL/gl.h>
-#include "../Faces_list/Faces_list.hpp"
 #include <fstream>   
 #include <sstream>
 #include <iostream>
@@ -9,6 +8,12 @@
 #include <cfloat>
 #include <array>
 #pragma once
+
+typedef struct inner_elements {
+    std::vector<std::array<double, 3>> v;
+    std::vector<std::array<double, 3>> vn;
+    std::vector<std::array<double, 2>> vt;
+}               inner_elements;
 
 typedef struct v_vn_vt {
     std::vector<std::vector<double>> v_full;
@@ -27,14 +32,12 @@ class Faces {
         Faces(std::string filename);
         ~Faces();
 
-        int load_lanes_from_obj();
-        v_vn_vt *split_parts();
         std::vector<std::vector<std::string>> get_faces_indexes();
-        int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         const std::vector<std::string>& get_lines() const;
-        const Faces_list* get_list() const;
+        const std::string& get_material_file_name() const;
+        const std::string& get_material_from_file() const;
+        const std::vector<inner_elements>& get_list() const;
         const int& get_amount() const;
-        obj_node* get_line(int node);
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
@@ -61,10 +64,17 @@ class Faces {
                 }
         };
     private:
+        int load_lanes_from_obj();
+        v_vn_vt *split_parts();
+        int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
+        void save_material_file_name();
+
         std::vector<std::string> lines;
+        std::string material_from_file;
+        std::string material_file_name;
         std::string filecontent;
         std::string filename;
-        Faces_list *list;
+        std::vector<inner_elements> list;
         int amount;
 };
 

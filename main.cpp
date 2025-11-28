@@ -1,4 +1,8 @@
-#include "scop/scop.hpp"
+#include "./scop/Draw/Draw.hpp"
+#include "./scop/Window/Window.hpp"
+#include "./scop/OpenGL/OpenGL.hpp"
+#include "./scop/Faces/Faces.hpp"
+#include "./scop/Material/Material.hpp"
 
 int main(int argc, char **argv) {
     Scop_window *window = nullptr;
@@ -11,34 +15,42 @@ int main(int argc, char **argv) {
         std::cout << "Input filename to start" << std::endl;
         return 1;
     }
-    (void)argv;
     try {
         window = new Scop_window(200, 200, 1200, 800);
         if (window == nullptr) {
             std::cerr << "Error. Window allocation failed" << std::endl;
             return 1;
         }
+        std::cout << "done window" << std::endl;
         opengl = new Scop_openGL(window, window->get_display(), 0);
         if (opengl == nullptr) {
             std::cerr << "Error. OpenGL allocation failed" << std::endl;
             goto delete_all_error;
         }
+        std::cout << "done opengl" << std::endl;
         opengl->create_viewport();
         draw = new Draw(*opengl, *window);
         if (draw == nullptr) {
             std::cerr << "Error. Draw allocation failed" << std::endl;
             goto delete_all_error;
         }
+        std::cout << "done draw" << std::endl;
         faces = new Faces(argv[1]);
         if (faces == nullptr) {
             std::cerr << "Error. Draw allocation failed" << std::endl;
             goto delete_all_error;
         }
-        material = new Material(argv[1]);
+        std::cout << "done faces" << std::endl;
+        draw->set_faces(faces);
+        std::string arg = argv[1];
+        size_t pos = arg.find_last_of('/');
+        arg.erase(pos + 1, arg.length());
+        material = new Material(arg + ((std::string)faces->get_material_file_name()), faces);
         if (material == nullptr) {
             std::cerr << "Error. Material allocation failed" << std::endl;
             goto delete_all_error;
         }
+        std::cout << "done material" << std::endl;
         window->set_openGL(opengl);
         window->set_drawer(draw);
         window->set_faces(faces);
@@ -47,6 +59,7 @@ int main(int argc, char **argv) {
         window->hold_open();
     } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
+        goto delete_all_error;
     }
     delete material;
     delete faces;
