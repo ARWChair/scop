@@ -1,9 +1,16 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <exception>
 #include <stdbool.h>
 #include <cstring>
+#include <vector>
+#include <array>
 #include <iostream>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glu.h>
+#include "../Faces/Faces.hpp"
 #pragma once
 
 class Draw;
@@ -29,18 +36,25 @@ class Scop_window {
         void set_faces(Faces*& faces);
         void set_openGL(Scop_openGL*& scop_openGL);
         void set_material(Material*& material);
-
+        
         const unsigned int &get_width() const;
         const unsigned int &get_height() const;
         // Exceptions
         class WindowCreationFailed : public std::exception {
             public:
-                virtual const char* what() const throw() {
-                    return "Error while creating a window";
-                }
+            virtual const char* what() const throw() {
+                return "Error while creating a window";
+            }
         };
     protected:
     private:
+        void create_vectors(std::vector<inner_elements>&, std::vector<std::vector<std::array<double, 3>>>&,
+            std::vector<std::vector<std::array<double, 3>>>&, 
+            std::vector<std::vector<std::array<double, 2>>>&);
+        // void create_vertex_array(std::vector<GLfloat>&, std::vector<GLfloat>&, std::vector<GLfloat>&,
+        //     std::vector<std::vector<std::array<double, 3>>>&,
+        //     std::vector<std::vector<std::array<double, 3>>>&, 
+        //     std::vector<std::vector<std::array<double, 2>>>&);
         Display* main_display;
         Window root_window, main_window;
         unsigned int width, height, border_width, ui_class;

@@ -2,22 +2,26 @@
 
 Faces::Faces(std::string filename) {
     this->filename = filename;
-    this->list = NULL;
     this->amount = 0;
 
     this->filename += ".obj";
+    std::cout << "done filename" << std::endl;
     if (load_lanes_from_obj() == -1)
         throw LoadException();
+    std::cout << "done loading" << std::endl;
     v_vn_vt* elements = split_parts();
     if (!elements)
         throw SplitException();
+    std::cout << "done splitting" << std::endl;
     std::vector<std::vector<std::string>> face_indexes = get_faces_indexes();
+    std::cout << "done getting" << std::endl;
+    save_material_file_name();
+    std::cout << "done saving" << std::endl;
     split_in_tree(elements, face_indexes);
+    std::cout << "done tree" << std::endl;
 }
 
-Faces::~Faces() {
-    delete list;
-}
+Faces::~Faces() {}
 
 int Faces::load_lanes_from_obj() {
     std::ifstream file(filename);
@@ -65,6 +69,25 @@ v_vn_vt *Faces::split_parts() {
         }
     }
     return elements;
+}
+
+void Faces::save_material_file_name() {
+    int saved = 0;
+    for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end() && saved < 2; it++) {
+        std::istringstream ss(*it);
+        std::string line;
+
+        ss >> line;
+        if (line == "mtllib") {
+            saved++;
+            ss >> material_file_name;
+        }
+        if (line == "usemtl") {
+            saved++;
+            ss >> material_from_file;
+            std::cout << material_from_file << std::endl;
+        }
+    }
 }
 
 std::vector<std::vector<std::string>> Faces::get_faces_indexes() {
@@ -125,28 +148,34 @@ inner_elements get_indices_v_normals(v_vn_vt_layer& row, v_vn_vt*& elements) {
     std::array<double, 3> vn;
 
     int arr_pos;
-    for (std::vector<double>::iterator it = row.v_full.begin(); it != row.v_full.end(); it++) {
+    for (size_t i = 0; i < row.v_full.size(); i++) {
         arr_pos = 0;
-        std::vector<std::vector<double>>::iterator row_loop = elements->v_full.begin() + *it;
-        row_loop--;
-        for (std::vector<double>::iterator inner = row_loop->begin(); inner != row_loop->end(); inner++)
-            v[arr_pos++] = *inner;
+        size_t row_index = row.v_full[i];
+        std::vector<double>& row_loop = elements->v_full[row_index - 1];
+        
+        for (size_t j = 0; j < row_loop.size(); j++) {
+            v[arr_pos++] = row_loop[j];
+        }
         elem.v.push_back(v);
     }
-    for (std::vector<double>::iterator it = row.vn_full.begin(); it != row.vn_full.end(); it++) {
+    for (size_t i = 0; i < row.vn_full.size(); i++) {
         arr_pos = 0;
-        std::vector<std::vector<double>>::iterator row_loop = elements->vn_full.begin() + *it;
-        row_loop--;
-        for (std::vector<double>::iterator inner = row_loop->begin(); inner != row_loop->end(); inner++)
-            vn[arr_pos++] = *inner;
+        size_t row_index = row.vn_full[i];
+        std::vector<double>& row_loop = elements->vn_full[row_index - 1];
+        
+        for (size_t j = 0; j < row_loop.size(); j++) {
+            vn[arr_pos++] = row_loop[j];
+        }
         elem.vn.push_back(vn);
     }
-    for (std::vector<double>::iterator it = row.vt_full.begin(); it != row.vt_full.end(); it++) {
+    for (size_t i = 0; i < row.vt_full.size(); i++) {
         arr_pos = 0;
-        std::vector<std::vector<double>>::iterator row_loop = elements->vt_full.begin() + *it;
-        row_loop--;
-        for (std::vector<double>::iterator inner = row_loop->begin(); inner != row_loop->end(); inner++)
-            vt[arr_pos++] = *inner;
+        size_t row_index = row.vt_full[i];
+        std::vector<double>& row_loop = elements->vt_full[row_index - 1];
+        
+        for (size_t j = 0; j < row_loop.size(); j++) {
+            vt[arr_pos++] = row_loop[j];
+        }
         elem.vt.push_back(vt);
     }
     return elem;
@@ -162,12 +191,11 @@ int Faces::split_in_tree(v_vn_vt*& elements, std::vector<std::vector<std::string
         inner_elements elems = get_indices_v_normals(row, elements);
 
         if (i == 0) {
-            list = new Faces_list(elems.v, elems.vn, elems.vt);
-            if (!list)
-                throw ListNewException();
+            list.push_back(elems);
             continue;
         }
-        list->add_elements(elems.v, elems.vn, elems.vt);
+        list.push_back(elems);
+        std::cout << "Added element: " << amount << " of " << face_indexes.size() << std::endl;
     }
     delete elements;
     return i;
@@ -177,24 +205,9 @@ const std::vector<std::string>& Faces::get_lines() const {
     return lines;
 }
 
-const Faces_list* Faces::get_list() const {
+const std::vector<inner_elements>& Faces::get_list() const {
     return list;
 }
-
-obj_node* Faces::get_line(int node) {
-    int current_node = 0;
-    Faces_list *current = this->list;
-    obj_node* current_list = current->get_list();
-
-    if (node >= current->get_size())
-        return NULL;
-    while (current_node < node) {
-        current_list = current_list->next;
-        current_node++;
-    }
-    return current_list;
-}
-
 
 const int& Faces::get_amount() const {
     return amount;
@@ -287,3 +300,13 @@ void reallign_highest_point(std::vector<std::vector<std::array< double, 3>>> &fa
         }
     }
 }
+
+
+const std::string& Faces::get_material_file_name() const {
+    return material_file_name;
+}
+
+const std::string& Faces::get_material_from_file() const {
+    return material_from_file;
+}
+

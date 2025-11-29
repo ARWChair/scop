@@ -70,34 +70,26 @@ void Scop_window::create_window() {
 }
 
 void Scop_window::hold_open() {
-    obj_node *node = faces->get_line(0);
+    std::vector<inner_elements> node = faces->get_list();
     std::vector<std::vector<std::array<double, 3>>> v;
     std::vector<std::vector<std::array<double, 3>>> vn;
     std::vector<std::vector<std::array<double, 2>>> vt;
-    while (node) {
-        v.push_back(node->elements.v);
-        vn.push_back(node->elements.vn);
-        vt.push_back(node->elements.vt);
-        node = node->next;
-    }
+    create_vectors(node, v, vn, vt);
 
-    std::vector<std::vector<std::array<double, 3>>> converted_v = split_and_group(v);
-    std::vector<std::vector<std::array<double, 2>>> converted_vt;
-    std::vector<std::vector<std::array<double, 3>>> converted_vn;
-    if (vt.size() > 0)
-        converted_vt = split_and_group(vt);
-    if (vn.size() > 0)
-        converted_vn = split_and_group(vn);
-
-    reallign_highest_point(converted_v, 0);
-    reallign_highest_point(converted_v, 1);
-    reallign_highest_point(converted_v, 2);
+    // std::vector<GLfloat> verts, normals, textcords;
+    // create_vertex_array(verts, normals, textcords, converted_v, converted_vn, converted_vt);
 
     XEvent e;
+    Atom wmDeleteMessage = XInternAtom(main_display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(main_display, main_window, &wmDeleteMessage, 1);
     while(1) {
         while (XPending(main_display)) {
             XNextEvent(main_display, &e);
-
+            if (e.type == ClientMessage) {
+                if ((Atom)e.xclient.data.l[0] == wmDeleteMessage) {
+                    return;
+                }
+            }
             if (e.type == KeyPress) {
                 KeySym ks = XLookupKeysym(&e.xkey, 0);
                 if (ks == XK_Escape)
@@ -113,7 +105,7 @@ void Scop_window::hold_open() {
         glLoadIdentity();
         
         gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
-        glScalef(0.5f, 0.5f, 0.5f);
+        // glScalef(0.5f, 0.5f, 0.5f);
         
         GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
         glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -124,19 +116,19 @@ void Scop_window::hold_open() {
 
         glBegin(GL_TRIANGLES);
         int amount = 0;
-        std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = converted_vn.begin();
-        std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = converted_vt.begin();
-        for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = converted_v.begin(); it_1 != converted_v.end(); it_1++) {
+        std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = vn.begin();
+        std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = vt.begin();
+        for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = v.begin(); it_1 != v.end(); it_1++) {
             if (toggle == false && material->is_missing() == false)
                 setup_face_colors(amount);
             if (material->is_missing() == true)
                 setup_face_colors(amount);
-            if (it_2 == converted_vn.end() && it_3 == converted_vt.end()) {
+            if (it_2 == vn.end() && it_3 == vt.end()) {
                 drawer->draw_triangle(*it_1, material, toggle);
-            } else if (it_3 == converted_vt.end()) {
+            } else if (it_3 == vt.end()) {
                 drawer->draw_triangle(*it_1, *it_2->begin(), material, toggle);
                 it_2++;
-            } else if (it_2 == converted_vn.end()) {
+            } else if (it_2 == vn.end()) {
                 drawer->draw_triangle(*it_1, *it_3, material, toggle);
                 it_3++;
             } else {
@@ -157,14 +149,49 @@ void Scop_window::setup_face_colors(int face) {
     float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
     float gray = grayValues[face % 6];
     
+    static const GLfloat params[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
     glMaterialfv(GL_FRONT, GL_AMBIENT, faceColor);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, faceColor);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, (GLfloat[]){0.0f, 0.0f, 0.0f, 1.0f});
+    glMaterialfv(GL_FRONT, GL_SPECULAR, params);
     glMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
-    glMaterialfv(GL_FRONT, GL_EMISSION, (GLfloat[]){0.0f, 0.0f, 0.0f, 1.0f});
+    glMaterialfv(GL_FRONT, GL_EMISSION, params);
     glColor3f(gray, gray, gray);
 }
+
+void Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
+    for (std::vector<inner_elements>::iterator list_it = node.begin(); list_it != node.end(); list_it++) {
+        v.push_back(list_it->v);
+        vn.push_back(list_it->vn);
+        vt.push_back(list_it->vt);
+    }
+
+    std::vector<std::vector<std::array<double, 3>>> converted_v = split_and_group(v);
+    std::vector<std::vector<std::array<double, 2>>> converted_vt;
+    std::vector<std::vector<std::array<double, 3>>> converted_vn;
+    if (vt.size() > 0)
+        converted_vt = split_and_group(vt);
+    if (vn.size() > 0)
+        converted_vn = split_and_group(vn);
+
+    reallign_highest_point(converted_v, 0);
+    reallign_highest_point(converted_v, 1);
+    reallign_highest_point(converted_v, 2);
+
+    v = converted_v;
+    vt = converted_vt;
+    vn = converted_vn;
+}
+
+// void Scop_window::create_vertex_array(std::vector<GLfloat> &verts, std::vector<GLfloat> &normals, std::vector<GLfloat> &textcords, std::vector<std::vector<std::array<double, 3>>>& v,std::vector<std::vector<std::array<double, 3>>>& vt, std::vector<std::vector<std::array<double, 2>>>& vn) {
+//     for (std::vector<std::vector<std::array<double, 3>>>::iterator verts_it = converted_v.begin(); verts_it != converted_v.end(); verts_it++) {
+//         for (std::vector<std::array<double, 3>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
+//             verts.push_back((*pos_it)[0]);
+//             verts.push_back((*pos_it)[1]);
+//             verts.push_back((*pos_it)[2]);
+//         }
+//     }
+// }
 
 void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {
     this->scop_openGL = scop_openGL;

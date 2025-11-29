@@ -21,6 +21,9 @@ Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int 
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
     create_lighting();
 
     glEnable(GL_DEPTH_TEST);

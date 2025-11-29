@@ -1,4 +1,5 @@
 #include "Draw.hpp"
+#include "../Faces/Faces.hpp"
 #include "../Window/Window.hpp"
 #include "../OpenGL/OpenGL.hpp"
 #include "../Material/Material.hpp"
@@ -121,12 +122,13 @@ void Draw::draw_texture(Material *&material) {
     // //     glEnable();
     // // }
 
-    draw_individual_text(material->get_Ka(), GL_AMBIENT);
-    draw_individual_text(material->get_Kd(), GL_DIFFUSE);
-    draw_individual_text(material->get_Ks(), GL_SPECULAR);
-    draw_individual_text(material->get_Ke(), GL_EMISSION);
-    if (material->get_Ns().size() != 0) {
-        GLfloat blender_ns = static_cast<GLfloat>(material->get_Ns()[0]);
+    std::string name = faces->get_material_from_file();
+    draw_individual_text(material->get_Ka(name), GL_AMBIENT);
+    draw_individual_text(material->get_Kd(name), GL_DIFFUSE);
+    draw_individual_text(material->get_Ks(name), GL_SPECULAR);
+    draw_individual_text(material->get_Ke(name), GL_EMISSION);
+    if (material->get_Ns(name).size() != 0) {
+        GLfloat blender_ns = static_cast<GLfloat>(material->get_Ns(name)[0]);
         GLfloat opengl_ns;
         opengl_ns = blender_ns * (128.0f / 1000.0f);
         if (blender_ns > 1000.0f)
@@ -184,6 +186,10 @@ double const &Draw::get_xPos() const {
 
 double const &Draw::get_yPos() const {
     return yPos;
+}
+
+void Draw::set_faces(Faces*& faces) {
+    this->faces = faces;
 }
 
 void Draw::set_xPos(double x) {
