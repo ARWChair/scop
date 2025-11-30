@@ -55,6 +55,8 @@ class Scop_window {
         //     std::vector<std::vector<std::array<double, 3>>>&,
         //     std::vector<std::vector<std::array<double, 3>>>&, 
         //     std::vector<std::vector<std::array<double, 2>>>&);
+        void create_vertex_array(std::vector<GLfloat>& ar, std::vector<std::vector<std::array<double, 3>>>&);
+
         Display* main_display;
         Window root_window, main_window;
         unsigned int width, height, border_width, ui_class;

@@ -98,6 +98,72 @@ void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&materi
     glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
+void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
+    glDisable(GL_LIGHTING);
+    if (vertices.empty()) return;
+
+    // Anzahl der Vertices
+    size_t vertexCount = vertices.size() / 3;
+
+    // Farbpuffer anlegen (RGB pro Vertex)
+    std::vector<GLfloat> colors;
+    colors.reserve(vertexCount * 3);
+
+    for (size_t i = 0; i < vertexCount; i++) {
+        // Face index = welcher Dreierblock?
+        bool evenFace = ((i / 3) % 2 == 0);
+
+        if (evenFace) {
+            // Weiß
+            colors.push_back(1.0f);
+            colors.push_back(1.0f);
+            colors.push_back(1.0f);
+        } else {
+            // Grau
+            colors.push_back(0.5f);
+            colors.push_back(0.5f);
+            colors.push_back(0.5f);
+        }
+    }
+
+    // Rendering
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, 0, vertices.data());
+    glColorPointer(3, GL_FLOAT, 0, colors.data());
+
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glEnable(GL_LIGHTING);
+}
+
+void Draw::setup_face_colors(std::vector<GLfloat>& verts) {
+    float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
+    static const GLfloat params[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    
+    (void)verts;
+    std::size_t vertex_offset = 0;
+    for (std::size_t face_index = 0; face_index < verts.size(); face_index++) {
+        float gray = grayValues[face_index % 6];
+        GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, faceColor);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, faceColor);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, params);
+        glMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
+        glMaterialfv(GL_FRONT, GL_EMISSION, params);
+        glColor3f(gray, gray, gray);
+
+        std::size_t vertices_in_face = verts.size();
+        glDrawArrays(GL_TRIANGLES, vertex_offset, vertices_in_face);
+        
+        vertex_offset += vertices_in_face;
+    }
+}
+
 void draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
     if (type.size() != 0) {
         float scale = 1;

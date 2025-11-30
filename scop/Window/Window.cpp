@@ -77,6 +77,9 @@ void Scop_window::hold_open() {
     create_vectors(node, v, vn, vt);
 
     // std::vector<GLfloat> verts, normals, textcords;
+    std::vector<GLfloat> verts;
+    create_vertex_array(verts, v);
+    drawer->setup_face_colors(verts);
     // create_vertex_array(verts, normals, textcords, converted_v, converted_vn, converted_vt);
 
     XEvent e;
@@ -114,31 +117,32 @@ void Scop_window::hold_open() {
         glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
         glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
 
-        glBegin(GL_TRIANGLES);
-        int amount = 0;
-        std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = vn.begin();
-        std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = vt.begin();
-        for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = v.begin(); it_1 != v.end(); it_1++) {
-            if (toggle == false && material->is_missing() == false)
-                setup_face_colors(amount);
-            if (material->is_missing() == true)
-                setup_face_colors(amount);
-            if (it_2 == vn.end() && it_3 == vt.end()) {
-                drawer->draw_triangle(*it_1, material, toggle);
-            } else if (it_3 == vt.end()) {
-                drawer->draw_triangle(*it_1, *it_2->begin(), material, toggle);
-                it_2++;
-            } else if (it_2 == vn.end()) {
-                drawer->draw_triangle(*it_1, *it_3, material, toggle);
-                it_3++;
-            } else {
-                drawer->draw_triangle(*it_1, *it_2->begin(), *it_3, material, toggle);
-                it_2++;
-                it_3++;
-            }
-            amount++;
-        }
-        glEnd();
+        // glBegin(GL_TRIANGLES);
+        // int amount = 0;
+        // std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = vn.begin();
+        // std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = vt.begin();
+        // for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = v.begin(); it_1 != v.end(); it_1++) {
+        //     if (toggle == false && material->is_missing() == false)
+        //         setup_face_colors(amount);
+        //     if (material->is_missing() == true)
+        //         setup_face_colors(amount);
+        //     if (it_2 == vn.end() && it_3 == vt.end()) {
+        //         drawer->draw_triangle(*it_1, material, toggle);
+        //     } else if (it_3 == vt.end()) {
+        //         drawer->draw_triangle(*it_1, *it_2->begin(), material, toggle);
+        //         it_2++;
+        //     } else if (it_2 == vn.end()) {
+        //         drawer->draw_triangle(*it_1, *it_3, material, toggle);
+        //         it_3++;
+        //     } else {
+        //         drawer->draw_triangle(*it_1, *it_2->begin(), *it_3, material, toggle);
+        //         it_2++;
+        //         it_3++;
+        //     }
+        //     amount++;
+        // }
+        // glEnd();
+        drawer->draw_triangle(verts);
         glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
         glFlush();
         drawer->inc_rl_rotation(0.005f);
@@ -192,6 +196,22 @@ void Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<
 //         }
 //     }
 // }
+
+void Scop_window::create_vertex_array(std::vector<GLfloat>& va_v, std::vector<std::vector<std::array<double, 3>>>& v) {
+    glgenBuffer();
+    va_v.clear();
+    for (std::vector<std::vector<std::array<double, 3>>>::iterator verts_it = v.begin(); verts_it != v.end(); verts_it++) {
+        for (std::vector<std::array<double, 3>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
+            va_v.push_back(static_cast<GLfloat>((*pos_it)[0]));
+            va_v.push_back(static_cast<GLfloat>((*pos_it)[1]));
+            va_v.push_back(static_cast<GLfloat>((*pos_it)[2]));
+        }
+    }
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, va_v.data());
+    glDrawArrays(GL_TRIANGLES, 0, va_v.size());
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
 
 void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {
     this->scop_openGL = scop_openGL;
