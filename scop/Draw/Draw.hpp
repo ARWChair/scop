@@ -22,6 +22,8 @@ class Draw {
         void draw_triangle(std::vector<std::array<double, 3>>, std::array<double, 3> vn, Material *&material, bool toggle);
         void draw_triangle(std::vector<std::array<double, 3>>, std::vector<std::array<double, 2>> vt, Material *&material, bool toggle);
         void draw_triangle(std::vector<std::array<double, 3>> v, Material *&material, bool toggle);
+        void draw_triangle(std::vector<GLfloat>& f);
+        void setup_face_colors(std::vector<GLfloat>& verts);
         void draw_texture(Material *&material);
 
         double const &get_ud_rotation() const;
