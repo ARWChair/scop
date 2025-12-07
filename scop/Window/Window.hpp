@@ -26,7 +26,7 @@ class Scop_window {
         ~Scop_window();
 
         void create_window();
-        void hold_open(); //temp
+        void hold_open();
         void setup_face_colors(int face);
         Display const *get_display() const;
         Window const &get_window() const;
@@ -46,6 +46,7 @@ class Scop_window {
         };
     protected:
     private:
+        void apply_material(std::string& material_name);
         std::vector<unsigned int> create_vectors(std::vector<inner_elements>&, std::vector<std::vector<std::array<double, 3>>>&,
             std::vector<std::vector<std::array<double, 3>>>&, 
             std::vector<std::vector<std::array<double, 2>>>&);

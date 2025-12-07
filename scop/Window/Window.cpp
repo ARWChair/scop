@@ -69,28 +69,256 @@ void Scop_window::create_window() {
     XMapWindow(main_display, main_window);
 }
 
+void force_outward_normals(std::vector<GLfloat>& vertices, 
+                          std::vector<GLfloat>& normals) {
+    float center[3] = {0,0,0};
+    
+    // Berechne Center
+    for(size_t i = 0; i < vertices.size(); i += 3) {
+        center[0] += vertices[i];
+        center[1] += vertices[i+1];
+        center[2] += vertices[i+2];
+    }
+    center[0] /= vertices.size() / 3;
+    center[1] /= vertices.size() / 3;
+    center[2] /= vertices.size() / 3;
+    
+    // Normals = Richtung von Center zu Vertex
+    normals.clear();
+    for(size_t i = 0; i < vertices.size(); i += 3) {
+        float dx = vertices[i] - center[0];
+        float dy = vertices[i+1] - center[1];
+        float dz = vertices[i+2] - center[2];
+        
+        // Normalisieren
+        float length = sqrt(dx*dx + dy*dy + dz*dz);
+        normals.push_back(dx / length);
+        normals.push_back(dy / length);
+        normals.push_back(dz / length);
+    }
+}
+
+// void test_with_simple_normals(GLuint v_int, std::vector<GLfloat> v_indices) {
+//     std::cout << "\n=== TEST WITH SIMPLE NORMALS ===" << std::endl;
+    
+//     // 1. EINFACHSTE Normals (alle nach vorne)
+//     std::vector<GLfloat> simple_normals;
+//     int vertex_count = v_indices.size() / 3;
+//     for(int i = 0; i < vertex_count; i++) {
+//         simple_normals.push_back(0.0f);   // X
+//         simple_normals.push_back(0.0f);   // Y
+//         simple_normals.push_back(1.0f);   // Z (nach vorne)
+//     }
+    
+//     // 2. Normal Buffer erstellen
+//     GLuint normal_buffer;
+//     glGenBuffers(1, &normal_buffer);
+//     glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+//     glBufferData(GL_ARRAY_BUFFER, 
+//                  simple_normals.size() * sizeof(GLfloat),
+//                  simple_normals.data(),
+//                  GL_STATIC_DRAW);
+    
+//     std::cout << "Created simple normals buffer: " 
+//               << simple_normals.size() << " floats" << std::endl;
+    
+//     // 3. LIGHTING SETUP (einfach)
+//     glEnable(GL_LIGHTING);
+//     glEnable(GL_LIGHT0);
+    
+//     GLfloat light_pos[] = {0.0f, 0.0f, 5.0f, 1.0f};  // Licht von vorne
+//     GLfloat light_ambient[] = {0.5f, 0.5f, 0.5f, 1.0f};
+//     GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    
+//     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+//     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+//     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    
+//     std::cout << "Lighting enabled, light at: " 
+//               << light_pos[0] << ", " << light_pos[1] << ", " << light_pos[2] << std::endl;
+    
+//     // 4. EINFACHES Material (ROT)
+//     GLfloat material_ambient[] = {0.2f, 0.0f, 0.0f, 1.0f};
+//     GLfloat material_diffuse[] = {1.0f, 0.0f, 0.0f, 1.0f};  // KNALLROT
+//     GLfloat material_specular[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    
+//     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material_ambient);
+//     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffuse);
+//     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_specular);
+//     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+    
+//     std::cout << "Material set to RED" << std::endl;
+    
+//     // 5. RENDERN
+//     // Vertex Buffer
+//     glBindBuffer(GL_ARRAY_BUFFER, v_int);
+//     glEnableClientState(GL_VERTEX_ARRAY);
+//     glVertexPointer(3, GL_FLOAT, 0, 0);
+    
+//     // Normal Buffer (unsere einfachen)
+//     glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+//     glEnableClientState(GL_NORMAL_ARRAY);
+//     glNormalPointer(GL_FLOAT, 0, 0);
+    
+//     std::cout << "Drawing " << vertex_count << " vertices..." << std::endl;
+    
+//     // Draw
+//     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+    
+//     // 6. CLEANUP
+//     glDisableClientState(GL_VERTEX_ARRAY);
+//     glDisableClientState(GL_NORMAL_ARRAY);
+//     glBindBuffer(GL_ARRAY_BUFFER, 0);
+//     glDeleteBuffers(1, &normal_buffer);
+    
+//     // 7. ERROR CHECK
+//     GLenum error = glGetError();
+//     if(error == GL_NO_ERROR) {
+//         std::cout << "SUCCESS: No OpenGL errors" << std::endl;
+//     } else {
+//         std::cout << "ERROR: OpenGL error " << error << std::endl;
+//     }
+// }
+
+void test_with_normals_only(GLuint v_int, std::vector<GLfloat> v_indices) {
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    
+    // 2. Einfache feste Farbe
+    glColor3f(1.0f, 0.0f, 0.0f);  // KNALLROT
+    
+    // 3. Nur Vertex Buffer
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, 0);
+    
+    // 4. DrawArrays (keine Indices)
+    GLsizei vertex_count = v_indices.size() / 3;
+    glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+    
+    // 5. Cleanup
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void setup_proper_lighting() {
+    // 1. GLOBAL AMBIENT (wichtigstes!)
+    GLfloat global_ambient[] = {0.4f, 0.4f, 0.4f, 1.0f};  // 40% Helligkeit überall
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+    
+    // 2. MAIN LIGHT (Key Light)
+    glEnable(GL_LIGHT0);
+    
+    // Licht von OBEN-VORNE (nicht direkt vorne)
+    GLfloat light0_pos[] = {0.0f, 5.0f, 5.0f, 1.0f};  // Oben-vorne
+    GLfloat light0_ambient[] = {0.3f, 0.3f, 0.3f, 1.0f};
+    GLfloat light0_diffuse[] = {0.7f, 0.7f, 0.7f, 1.0f};
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
+    
+    // 3. FILL LIGHT (von der Seite)
+    glEnable(GL_LIGHT1);
+    GLfloat light1_pos[] = {5.0f, 0.0f, 0.0f, 1.0f};  // Rechts
+    GLfloat light1_diffuse[] = {0.3f, 0.3f, 0.3f, 1.0f};  // Schwächer
+    
+    glLightfv(GL_LIGHT1, GL_POSITION, light1_pos);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
+    
+    // 4. BACK LIGHT (von hinten)
+    glEnable(GL_LIGHT2);
+    GLfloat light2_pos[] = {0.0f, 0.0f, -5.0f, 1.0f};  // Hinten
+    GLfloat light2_diffuse[] = {0.2f, 0.2f, 0.2f, 1.0f};  // Sehr schwach
+    
+    glLightfv(GL_LIGHT2, GL_POSITION, light2_pos);
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, light2_diffuse);
+    
+    // 5. TWO-SIDED LIGHTING
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    
+    std::cout << "Lighting: 3-point setup (key, fill, back) + ambient" << std::endl;
+}
+
+
+
+
+
+void create_flat_arrays(
+    const std::vector<inner_elements>& faces,
+    std::vector<GLfloat>& vertex_buffer,
+    std::vector<GLfloat>& normal_buffer,
+    std::vector<GLfloat>& tex_buffer
+) {
+    vertex_buffer.clear();
+    normal_buffer.clear();
+    tex_buffer.clear();
+
+    for (const auto& face : faces) {
+        size_t count = face.v.size();  // Anzahl Vertices in diesem Face
+
+        for (size_t i = 0; i < count; i++) {
+
+            // -------- Position (v) --------
+            vertex_buffer.push_back(face.v[i][0]);
+            vertex_buffer.push_back(face.v[i][1]);
+            vertex_buffer.push_back(face.v[i][2]);
+
+            // -------- Normale (vn) --------
+            if (i < face.vn.size()) {
+                normal_buffer.push_back(face.vn[i][0]);
+                normal_buffer.push_back(face.vn[i][1]);
+                normal_buffer.push_back(face.vn[i][2]);
+            } else {
+                // Falls OBJ keine Normale hat → default: 0,0,1
+                normal_buffer.push_back(0.0f);
+                normal_buffer.push_back(0.0f);
+                normal_buffer.push_back(1.0f);
+            }
+
+            // -------- UV (vt) --------
+            if (i < face.vt.size()) {
+                tex_buffer.push_back(face.vt[i][0]);
+                tex_buffer.push_back(face.vt[i][1]);
+            } else {
+                tex_buffer.push_back(0.0f);
+                tex_buffer.push_back(0.0f);
+            }
+        }
+    }
+}
+
+
 void Scop_window::hold_open() {
     std::vector<inner_elements> node = faces->get_list();
     std::vector<std::vector<std::array<double, 3>>> v;
     std::vector<std::vector<std::array<double, 3>>> vn;
     std::vector<std::vector<std::array<double, 2>>> vt;
     std::vector<unsigned int> indices = create_vectors(node, v, vn, vt);
-
     std::vector<GLfloat> v_indices, vt_indices, vn_indices;
+
     v_indices = create_GLfloat_array(v);
-    vt_indices = create_GLfloat_array(vt);
     vn_indices = create_GLfloat_array(vn);
-    std::cout << v_indices[0] << ", " << v_indices[1] << ", " << v_indices[2] << std::endl;
-    std::cout << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
-    
-    std::cout << "\n=== Vertex Data ===" << std::endl;
-    for(int i = 0; i < std::min(100, (int)v_indices.size()); i += 3) {
-        std::cout << "Vertex " << (i/3) << ": " 
-                << v_indices[i] << ", " 
-                << v_indices[i+1] << ", " 
-                << v_indices[i+2] << std::endl;
-    }
+    vt_indices = create_GLfloat_array(vt);
+
+    // create_flat_arrays(node, v_indices, vn_indices, vt_indices);
+    // reallign_highest_point(v_indices, 0);
+    // reallign_highest_point(v_indices, 1);
+    // reallign_highest_point(v_indices, 2);
+
+    for (std::vector<unsigned int>::iterator it = indices.begin(); it != indices.end(); it++)
+        std::cout << *it << ", ";
+    // indices.clear();
+    // for (unsigned int pos = 0; pos < v_indices.size(); pos++)
+    //     indices.push_back(pos);
+    std::cout << std::endl;
     drawer->create_vbo(v_indices, indices, vt_indices, vn_indices);
+    std::string mat_name = faces->get_material_from_file();;
+    std::cout << mat_name << std::endl;
+    std::cout << "Size: " << vn_indices.size() << std::endl;
+    // force_outward_normals(v_indices, vn_indices);
     // drawer->setup_face_colors(verts_indices);
     // create_vertex_array(verts, normals, textcords, converted_v, converted_vn, converted_vt);
 
@@ -120,7 +348,6 @@ void Scop_window::hold_open() {
         
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        
         gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
         // Create Scale calc
         // glScalef(0.5f, 0.5f, 0.5f);
@@ -132,34 +359,28 @@ void Scop_window::hold_open() {
         glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
         glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
 
-        // glBegin(GL_TRIANGLES);
-        // int amount = 0;
-        // std::vector<std::vector<std::array<double, 3>>>::iterator it_2 = vn.begin();
-        // std::vector<std::vector<std::array<double, 2>>>::iterator it_3 = vt.begin();
-        // for (std::vector<std::vector<std::array<double, 3>>>::iterator it_1 = v.begin(); it_1 != v.end(); it_1++) {
-        //     if (toggle == false && material->is_missing() == false)
-        //         setup_face_colors(amount);
-        //     if (material->is_missing() == true)
-        //         setup_face_colors(amount);
-        //     if (it_2 == vn.end() && it_3 == vt.end()) {
-        //         drawer->draw_triangle(*it_1, material, toggle);
-        //     } else if (it_3 == vt.end()) {
-        //         drawer->draw_triangle(*it_1, *it_2->begin(), material, toggle);
-        //         it_2++;
-        //     } else if (it_2 == vn.end()) {
-        //         drawer->draw_triangle(*it_1, *it_3, material, toggle);
-        //         it_3++;
-        //     } else {
-        //         drawer->draw_triangle(*it_1, *it_2->begin(), *it_3, material, toggle);
-        //         it_2++;
-        //         it_3++;
-        //     }
-        //     amount++;
+        apply_material(mat_name);
+        // if (drawer->has_texture()) {
+        //     glEnable(GL_TEXTURE_2D);
+        //     glBindTexture(GL_TEXTURE_2D, drawer->get_texture_id);
         // }
-        // glEnd();
-        // drawer->draw_triangle(verts);
+        GLfloat light_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        GLfloat light_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+        GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        GLfloat light_position[] = {0.0f, 0.0f, 5.0f, 1.0f};
 
-        drawer->render_vbo(indice_size);
+        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+        drawer->render_vbo(indice_size / 3);
+        // (void)indice_size;
+        // test_with_normals_only(drawer->get_v_int(), v_indices);
+        // test_with_simple_normals(drawer->get_v_int(), v_indices);
+
+        // if (drawer->has_texture())
+        //     glDisable(GL_TEXTURE_2D);
 
         glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
         glFlush();
@@ -181,7 +402,52 @@ void Scop_window::setup_face_colors(int face) {
     glColor3f(gray, gray, gray);
 }
 
-#include <cmath>
+void Scop_window::apply_material(std::string& material_name) {
+    if (!material || material->is_missing()) {
+        GLfloat default_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        GLfloat default_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+        GLfloat default_specular[] = {0.0f, 0.0f, 0.0f, 1.0f};
+        
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, default_ambient);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, default_diffuse);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, default_specular);
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+        glColor3f(0.8f, 0.8f, 0.8f);
+        return;
+    }
+    
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    
+    drawer->draw_individual_text(material->get_Ka(material_name), GL_AMBIENT);
+    auto Kd = material->get_Kd(material_name);
+    if(!Kd.empty()) {
+        drawer->draw_individual_text(Kd, GL_DIFFUSE);
+        glColor3f(Kd[0], Kd[1], Kd[2]);
+    }
+    drawer->draw_individual_text(material->get_Ks(material_name), GL_SPECULAR);
+    drawer->draw_individual_text(material->get_Ke(material_name), GL_EMISSION);
+    if (material->get_Ns(material_name).size() != 0) {
+        GLfloat blender_ns = static_cast<GLfloat>(material->get_Ns(material_name)[0]);
+        GLfloat opengl_ns;
+        
+        opengl_ns = blender_ns * (128.0f / 1000.0f);
+        opengl_ns = std::max(0.0f, std::min(128.0f, opengl_ns));
+        
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, opengl_ns);
+    } else {
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+    }
+    
+    std::array<double, 1> d = material->get_d(material_name);
+    if(!d.empty() && d[0] < 1.0f) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glColor4f(1.0f, 1.0f, 1.0f, d[0]);
+    } else {
+        glDisable(GL_BLEND);
+    }
+}
 
 std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
     for (std::vector<inner_elements>::iterator list_it = node.begin(); list_it != node.end(); list_it++) {
@@ -194,26 +460,8 @@ std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements
     std::vector<std::vector<std::array<double, 2>>> converted_vt;
     std::vector<std::vector<std::array<double, 3>>> converted_vn;
     std::vector<unsigned int> indices = split_and_group(converted_v, faces->get_indices());
-    std::vector<unsigned int> temp;
-    // for (std::vector<std::vector<std::array<double, 3>>>::iterator it = converted_v.begin(); it != converted_v.end(); it++) {
-    //     for (std::vector<std::array<double, 3>>::iterator inner = it->begin(); inner != it->end(); inner++) {
-    //         std::cout << (*inner)[0] << ", " << (*inner)[1] << ", " << (*inner)[2] << std::endl;
-    //     }
-    //     std::cout << std::endl;
-    // }
-    // std::cout << std::endl << std::endl << std::endl << std::endl;    
-    // int position = 1;
-    // std::cout << "Indices:\n";
-    for (std::vector<unsigned int>::iterator inner = indices.begin(); inner != indices.end(); inner++) {
-        temp.push_back(*inner);
-        // temp.push_back(*inner - 1);
-        // std::cout << *inner << ", ";
-        // if (position % 3 == 0)
-        //     std::cout << "\n";
-        // position++;
-    }
-    
-    // std::cout << std::endl;
+    std::cout << "Size: " << indices.size() << std::endl;
+    converted_v = split_and_group(v);
     if (vt.size() > 0)
         converted_vt = split_and_group(vt);
     if (vn.size() > 0)
@@ -227,7 +475,8 @@ std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements
     v = converted_v;
     vt = converted_vt;
     vn = converted_vn;
-    return temp;
+    // indices.clear();
+    return indices;
 }
 
 std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>& v) {

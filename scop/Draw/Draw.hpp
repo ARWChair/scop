@@ -34,7 +34,8 @@ class Draw {
         void setup_face_colors(std::vector<GLfloat>& verts);
         void draw_texture(Material *&material);
         void create_vbo(std::vector<GLfloat>&, std::vector<unsigned int>&, std::vector<GLfloat>&, std::vector<GLfloat>&);
-        void render_vbo(GLsizei verts); // vboid1 = vertexes, vboid2 = indices
+        void render_vbo(GLsizei verts);
+        void draw_individual_text(std::array<double, 3UL> type, int16_t type_name);
 
         double const &get_ud_rotation() const;
         double const &get_rl_rotation() const;
@@ -47,12 +48,16 @@ class Draw {
         void set_faces(Faces*& faces);
         void set_xPos(double x);
         void set_yPos(double y);
+        
+        GLuint get_v_int() {
+            return v_int;
+        }
     protected:
     private:
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
         Faces       *faces;
-        GLuint      v_int, v_ind, vn_int, vt_int, attribVertex, attribTextures, attribNormals;
+        GLuint      v_int, v_ind, vn_int, vt_int;
         double      rl_rot, ud_rot, xPos, yPos;
         bool        vn_bool, vt_bool;
 };

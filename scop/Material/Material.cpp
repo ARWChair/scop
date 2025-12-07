@@ -41,8 +41,8 @@ void Material::check_and_fill() {
 
     for (; it != temp.end(); it++) {
         if (it->name == faces->get_material_from_file()) {
-            break;
             found = true;
+            break;
         }
     }
     if (found == true)
