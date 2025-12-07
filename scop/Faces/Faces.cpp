@@ -5,21 +5,15 @@ Faces::Faces(std::string filename) {
     this->amount = 0;
 
     this->filename += ".obj";
-    std::cout << "done filename" << std::endl;
     if (load_lanes_from_obj() == -1)
         throw LoadException();
-    std::cout << "done loading" << std::endl;
     v_vn_vt* elements = split_parts();
     if (!elements)
         throw SplitException();
-    std::cout << "done splitting" << std::endl;
     std::vector<std::vector<std::string>> face_indexes = get_faces_indexes();
     save_faces_indices(face_indexes);
-    std::cout << "done getting" << std::endl;
     save_material_file_name();
-    std::cout << "done saving" << std::endl;
     split_in_tree(elements, face_indexes);
-    std::cout << "done tree" << std::endl;
 }
 
 Faces::~Faces() {}
@@ -210,7 +204,7 @@ int Faces::split_in_tree(v_vn_vt*& elements, std::vector<std::vector<std::string
             continue;
         }
         list.push_back(elems);
-        std::cout << "Added element: " << amount << " of " << face_indexes.size() << std::endl;
+        // std::cout << "Added element: " << amount << " of " << face_indexes.size() << std::endl;
     }
     delete elements;
     return i;
@@ -284,18 +278,6 @@ std::vector<unsigned int> split_and_group(std::vector<std::vector<std::array<dou
             }
         }
     }
-    int pos = 0;
-    std::cout << "\n=== RAW OBJ VERTICES (as read from file) ===" << std::endl;
-    for (std::vector<std::vector<std::array<double, 3>>>::iterator it = new_faces.begin(); it != new_faces.end(); it++) {
-        for (std::vector<std::array<double, 3>>::iterator inner = it->begin(); inner != it->end(); inner++) {
-            std::cout << (*inner)[0] << ", " << (*inner)[1] << ", " << (*inner)[2] << std::endl;
-        }
-        std::cout << std::endl;
-        pos++;
-        if (pos == 10)
-            break;
-    }
-    std::cout << std::endl << std::endl << std::endl << std::endl;
     faces = new_faces;
     return finished_indices;
 }
@@ -386,7 +368,6 @@ void reallign_highest_point(std::vector<std::vector<std::array< double, 3>>> &fa
             (*inner_it)[id] -= diff;
         }
     }
-    std::cout << "DIFF: " << diff << std::endl;
 }
 
 

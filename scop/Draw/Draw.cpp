@@ -20,6 +20,7 @@ Draw& Draw::operator=(const Draw& copy) {
 
 Draw::~Draw() {
     glDeleteBuffers(1, &v_int);
+    glDeleteBuffers(1, &v_ind);
     if (vn_bool == true)
         glDeleteBuffers(1, &vn_int);
     if (vt_bool == true)
@@ -105,46 +106,32 @@ void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&materi
 }
 
 void Draw::render_vbo(GLsizei verts) {
-    // glBindBuffer(GL_ARRAY_BUFFER, v_int);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
-
-    // glEnableVertexAttribArray(attribVertex);
-    // glVertexAttribPointer(attribVertex, 3, GL_FLOAT, false, 0, nullptr);
-    
-    // // if (vt_bool == true) {
-    // //     glBindBuffer(GL_ARRAY_BUFFER, vt_int);
-    // //     glEnableVertexAttribArray(attribTextures);
-    // //     glVertexAttribPointer(attribTextures, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    // // }
-    
-    // // if (vn_bool == true) {
-    // //     glBindBuffer(GL_ARRAY_BUFFER, vn_int);
-    // //     glEnableVertexAttribArray(attribNormals);
-    // //     glVertexAttribPointer(attribNormals, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    // // }
-    
-    // glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_BYTE, nullptr); 
-    
-    // glDisableVertexAttribArray(attribVertex);
-    // // if (vt_bool == true)
-    // //     glDisableVertexAttribArray(attribTextures);
-    // // if (vn_bool == true)
-    // //     glDisableVertexAttribArray(attribNormals);
-    
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    (void) attribVertex;
-    (void) attribTextures;
-    (void) attribNormals;
     glBindBuffer(GL_ARRAY_BUFFER, v_int);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
-
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, 0);
+    
+    if (vn_bool == true) {
+        glBindBuffer(GL_ARRAY_BUFFER, vn_int);
+        glEnableClientState(GL_NORMAL_ARRAY);
+        glNormalPointer(GL_FLOAT, 0, 0);
+    }
 
-    glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_INT, 0);
+    if (vt_bool == true) {
+        glBindBuffer(GL_ARRAY_BUFFER, vt_int);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glTexCoordPointer(2, GL_FLOAT, 0, 0);
+    }
+    
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    // glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, verts);
+    
     glDisableClientState(GL_VERTEX_ARRAY);
-
+    if (vt_bool == true)
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    if (vn_bool == true)
+        glDisableClientState(GL_NORMAL_ARRAY);
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -158,24 +145,22 @@ void Draw::create_vbo(std::vector<GLfloat>&v, std::vector<unsigned int>& v_indic
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
-    (void)vt;
-    (void)vn;
-    (void)attribNormals;
-    (void)attribTextures;
-    // if (!vt.empty()) {
-    //     std::cout << "Not empty" << std::endl;
-    //     glGenBuffers(1, &vt_int);
-    //     glBindBuffer(GL_ARRAY_BUFFER, vt_int);
-    //     glBufferData(GL_ARRAY_BUFFER, vt.size() * sizeof(GLfloat), vt.data(), GL_STATIC_DRAW);
-    //     vt_bool = true;
-    // }
+    if (!vt.empty()) {
+        glGenBuffers(1, &vt_int);
+        glBindBuffer(GL_ARRAY_BUFFER, vt_int);
+        glBufferData(GL_ARRAY_BUFFER, vt.size() * sizeof(GLfloat), vt.data(), GL_STATIC_DRAW);
+        vt_bool = true;
+    }
 
-    // if (!vn.empty()) {
-    //     glGenBuffers(1, &vn_int);
-    //     glBindBuffer(GL_ARRAY_BUFFER, vn_int);
-    //     glBufferData(GL_ARRAY_BUFFER, vn.size() * sizeof(GLfloat), vn.data(), GL_STATIC_DRAW);
-    //     vn_bool = true;
-    // }
+    if(!vn.empty()) {
+        glGenBuffers(1, &this->vn_int);
+        glBindBuffer(GL_ARRAY_BUFFER, this->vn_int);
+        glBufferData(GL_ARRAY_BUFFER, vn.size() * sizeof(GLfloat), vn.data(), GL_STATIC_DRAW);
+        this->vn_bool = true;
+        std::cout << "Normal buffer created with " << vn.size() << " floats" << std::endl;
+    } else {
+        std::cout << "WARNING: No normal data provided!" << std::endl;
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -247,7 +232,7 @@ void Draw::setup_face_colors(std::vector<GLfloat>& verts) {
     }
 }
 
-void draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
+void Draw::draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
     if (type.size() != 0) {
         float scale = 1;
         if (type_name == GL_AMBIENT)
@@ -258,7 +243,7 @@ void draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
             static_cast<GLfloat>(type[2]) * scale,
             static_cast<GLfloat>(1.0f)
         };
-        glMaterialfv(GL_FRONT, type_name, k);
+        glMaterialfv(GL_FRONT_AND_BACK, type_name, k);
     }
 }
 
