@@ -2,9 +2,17 @@
 #include "../OpenGL/OpenGL.hpp"
 #include "../Window/Window.hpp"
 #include <vector>
+// #include <GL/glx.h>
+// #include "../../../../libs/glew-2.2.0/include/GL/glew.h"
 #include <array>
 #include <cmath>
 #pragma once
+
+struct FinalVertex {
+    float px, py, pz;
+    float nx, ny, nz;
+    float u, v;
+};
 
 class Faces;
 
@@ -25,6 +33,8 @@ class Draw {
         void draw_triangle(std::vector<GLfloat>& f);
         void setup_face_colors(std::vector<GLfloat>& verts);
         void draw_texture(Material *&material);
+        void create_vbo(std::vector<GLfloat>&, std::vector<unsigned int>&, std::vector<GLfloat>&, std::vector<GLfloat>&);
+        void render_vbo(GLsizei verts); // vboid1 = vertexes, vboid2 = indices
 
         double const &get_ud_rotation() const;
         double const &get_rl_rotation() const;
@@ -42,5 +52,7 @@ class Draw {
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
         Faces       *faces;
-        double rl_rot, ud_rot, xPos, yPos;
+        GLuint      v_int, v_ind, vn_int, vt_int, attribVertex, attribTextures, attribNormals;
+        double      rl_rot, ud_rot, xPos, yPos;
+        bool        vn_bool, vt_bool;
 };
