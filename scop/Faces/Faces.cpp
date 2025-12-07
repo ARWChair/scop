@@ -14,6 +14,7 @@ Faces::Faces(std::string filename) {
         throw SplitException();
     std::cout << "done splitting" << std::endl;
     std::vector<std::vector<std::string>> face_indexes = get_faces_indexes();
+    save_faces_indices(face_indexes);
     std::cout << "done getting" << std::endl;
     save_material_file_name();
     std::cout << "done saving" << std::endl;
@@ -141,6 +142,20 @@ v_vn_vt_layer check_and_split(std::vector<std::string>& row) {
     return temp;
 }
 
+void Faces::save_faces_indices(std::vector<std::vector<std::string>>& base) { 
+    std::vector<unsigned int> faces_inner_temp; 
+    unsigned int temp;
+
+    for (std::vector<std::vector<std::string>>::iterator it = base.begin(); it != base.end(); it++) {
+        for (std::vector<std::string>::iterator it_inner = it->begin(); it_inner != it->end(); it_inner++) {
+            temp = std::stoul(*it_inner);
+            faces_inner_temp.push_back(temp);
+        }
+        indices.push_back(faces_inner_temp);
+        faces_inner_temp.clear();
+    }
+}
+
 inner_elements get_indices_v_normals(v_vn_vt_layer& row, v_vn_vt*& elements) {
     inner_elements elem;
     std::array<double, 3> v;
@@ -211,6 +226,78 @@ const std::vector<inner_elements>& Faces::get_list() const {
 
 const int& Faces::get_amount() const {
     return amount;
+}
+
+const std::vector<std::vector<unsigned int>>& Faces::get_indices() const {
+    return indices;
+}
+
+const std::string& Faces::get_material_file_name() const {
+    return material_file_name;
+}
+
+const std::string& Faces::get_material_from_file() const {
+    return material_from_file;
+}
+
+std::vector<unsigned int> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces, std::vector<std::vector<unsigned int>> indices) {
+    std::vector<std::vector<std::array<double, 3>>> new_faces;
+    std::vector<unsigned int> finished_indices;
+    std::vector<std::array<double, 3>> temp;
+
+    std::vector<std::vector<unsigned int>>::iterator indices_it = indices.begin();
+    for (std::vector<std::vector<std::array<double, 3>>>::iterator it = faces.begin(); it != faces.end(); it++, indices_it++) {
+        if (it->size() < 3)
+            continue;
+        if (it->size() == 3) {
+            new_faces.push_back(*it);
+            finished_indices.push_back((*indices_it)[0]);
+            finished_indices.push_back((*indices_it)[1]);
+            finished_indices.push_back((*indices_it)[2]);
+        } else if (it->size() == 4) {
+            temp.clear();
+            temp.push_back((*it)[0]);
+            finished_indices.push_back((*indices_it)[0]);
+            temp.push_back((*it)[1]);
+            finished_indices.push_back((*indices_it)[1]);
+            temp.push_back((*it)[2]);
+            finished_indices.push_back((*indices_it)[2]);
+            new_faces.push_back(temp);
+            temp.clear();
+            temp.push_back((*it)[0]);
+            finished_indices.push_back((*indices_it)[0]);
+            temp.push_back((*it)[2]);
+            finished_indices.push_back((*indices_it)[2]);
+            temp.push_back((*it)[3]);
+            finished_indices.push_back((*indices_it)[3]);
+            new_faces.push_back(temp);
+        } else {
+            for (unsigned long i = 1; i < it->size() - 1; i++) {
+                temp.clear();
+                temp.push_back((*it)[0]);
+                finished_indices.push_back((*indices_it)[0]);
+                temp.push_back((*it)[i]);
+                finished_indices.push_back((*indices_it)[i]);
+                temp.push_back((*it)[i + 1]);
+                finished_indices.push_back((*indices_it)[i + 1]);
+                new_faces.push_back(temp);
+            }
+        }
+    }
+    int pos = 0;
+    std::cout << "\n=== RAW OBJ VERTICES (as read from file) ===" << std::endl;
+    for (std::vector<std::vector<std::array<double, 3>>>::iterator it = new_faces.begin(); it != new_faces.end(); it++) {
+        for (std::vector<std::array<double, 3>>::iterator inner = it->begin(); inner != it->end(); inner++) {
+            std::cout << (*inner)[0] << ", " << (*inner)[1] << ", " << (*inner)[2] << std::endl;
+        }
+        std::cout << std::endl;
+        pos++;
+        if (pos == 10)
+            break;
+    }
+    std::cout << std::endl << std::endl << std::endl << std::endl;
+    faces = new_faces;
+    return finished_indices;
 }
 
 std::vector<std::vector<std::array<double, 3>>> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces) {
@@ -299,14 +386,7 @@ void reallign_highest_point(std::vector<std::vector<std::array< double, 3>>> &fa
             (*inner_it)[id] -= diff;
         }
     }
+    std::cout << "DIFF: " << diff << std::endl;
 }
 
-
-const std::string& Faces::get_material_file_name() const {
-    return material_file_name;
-}
-
-const std::string& Faces::get_material_from_file() const {
-    return material_from_file;
-}
 

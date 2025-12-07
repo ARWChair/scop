@@ -31,6 +31,9 @@ Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0f);
     
+    GLenum result = glewInit();
+    if (result != GLEW_OK)
+        throw GlewCreationFailed();
     this->done = true;
 }
 

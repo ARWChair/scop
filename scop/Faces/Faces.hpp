@@ -1,5 +1,4 @@
 #include <exception>
-#include <GL/gl.h>
 #include <fstream>   
 #include <sstream>
 #include <iostream>
@@ -37,6 +36,7 @@ class Faces {
         const std::string& get_material_file_name() const;
         const std::string& get_material_from_file() const;
         const std::vector<inner_elements>& get_list() const;
+        const std::vector<std::vector<unsigned int>>& get_indices() const;
         const int& get_amount() const;
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
@@ -68,6 +68,7 @@ class Faces {
         v_vn_vt *split_parts();
         int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         void save_material_file_name();
+        void save_faces_indices(std::vector<std::vector<std::string>>&);
 
         std::vector<std::string> lines;
         std::string material_from_file;
@@ -75,6 +76,7 @@ class Faces {
         std::string filecontent;
         std::string filename;
         std::vector<inner_elements> list;
+        std::vector<std::vector<unsigned int>> indices;
         int amount;
 };
 
@@ -84,6 +86,7 @@ class Faces {
 // Display first triangle
 // try do draw it in 3d space
 
+std::vector<unsigned int> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces, std::vector<std::vector<unsigned int>> indices);
 std::vector<std::vector<std::array<double, 3>>> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces);
 std::vector<std::vector<std::array<double, 2>>> split_and_group(std::vector<std::vector<std::array<double, 2>>> &faces);
 void reallign_highest_point(std::vector<std::vector<std::array< double, 3>>> &faces, int id);

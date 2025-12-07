@@ -5,7 +5,7 @@
 #include "../Material/Material.hpp"
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
-scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
+scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vn_bool(false), vt_bool(false)
 {}
 
 Draw& Draw::operator=(const Draw& copy) {
@@ -18,7 +18,13 @@ Draw& Draw::operator=(const Draw& copy) {
     return *this;
 }
 
-Draw::~Draw() {}
+Draw::~Draw() {
+    glDeleteBuffers(1, &v_int);
+    if (vn_bool == true)
+        glDeleteBuffers(1, &vn_int);
+    if (vt_bool == true)
+        glDeleteBuffers(1, &vt_int);
+}
 
 void Draw::make_current(GLXDrawable drawable) {
     scop_openGL.make_current(drawable);
@@ -96,6 +102,83 @@ void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&materi
     glVertex3f((*it)[0], (*it)[1], (*it)[2]);
     it++;
     glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+}
+
+void Draw::render_vbo(GLsizei verts) {
+    // glBindBuffer(GL_ARRAY_BUFFER, v_int);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+
+    // glEnableVertexAttribArray(attribVertex);
+    // glVertexAttribPointer(attribVertex, 3, GL_FLOAT, false, 0, nullptr);
+    
+    // // if (vt_bool == true) {
+    // //     glBindBuffer(GL_ARRAY_BUFFER, vt_int);
+    // //     glEnableVertexAttribArray(attribTextures);
+    // //     glVertexAttribPointer(attribTextures, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    // // }
+    
+    // // if (vn_bool == true) {
+    // //     glBindBuffer(GL_ARRAY_BUFFER, vn_int);
+    // //     glEnableVertexAttribArray(attribNormals);
+    // //     glVertexAttribPointer(attribNormals, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    // // }
+    
+    // glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_BYTE, nullptr); 
+    
+    // glDisableVertexAttribArray(attribVertex);
+    // // if (vt_bool == true)
+    // //     glDisableVertexAttribArray(attribTextures);
+    // // if (vn_bool == true)
+    // //     glDisableVertexAttribArray(attribNormals);
+    
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    (void) attribVertex;
+    (void) attribTextures;
+    (void) attribNormals;
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, 0);
+
+    glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_INT, 0);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Draw::create_vbo(std::vector<GLfloat>&v, std::vector<unsigned int>& v_indices, std::vector<GLfloat>& vn, std::vector<GLfloat>& vt) {
+    glGenBuffers(1, &v_int);
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), v.data(), GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &v_ind);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
+
+    (void)vt;
+    (void)vn;
+    (void)attribNormals;
+    (void)attribTextures;
+    // if (!vt.empty()) {
+    //     std::cout << "Not empty" << std::endl;
+    //     glGenBuffers(1, &vt_int);
+    //     glBindBuffer(GL_ARRAY_BUFFER, vt_int);
+    //     glBufferData(GL_ARRAY_BUFFER, vt.size() * sizeof(GLfloat), vt.data(), GL_STATIC_DRAW);
+    //     vt_bool = true;
+    // }
+
+    // if (!vn.empty()) {
+    //     glGenBuffers(1, &vn_int);
+    //     glBindBuffer(GL_ARRAY_BUFFER, vn_int);
+    //     glBufferData(GL_ARRAY_BUFFER, vn.size() * sizeof(GLfloat), vn.data(), GL_STATIC_DRAW);
+    //     vn_bool = true;
+    // }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Draw::draw_triangle(std::vector<GLfloat>& vertices) {

@@ -74,16 +74,30 @@ void Scop_window::hold_open() {
     std::vector<std::vector<std::array<double, 3>>> v;
     std::vector<std::vector<std::array<double, 3>>> vn;
     std::vector<std::vector<std::array<double, 2>>> vt;
-    create_vectors(node, v, vn, vt);
+    std::vector<unsigned int> indices = create_vectors(node, v, vn, vt);
 
-    // std::vector<GLfloat> verts, normals, textcords;
-    std::vector<GLfloat> verts;
-    create_vertex_array(verts, v);
-    drawer->setup_face_colors(verts);
+    std::vector<GLfloat> v_indices, vt_indices, vn_indices;
+    v_indices = create_GLfloat_array(v);
+    vt_indices = create_GLfloat_array(vt);
+    vn_indices = create_GLfloat_array(vn);
+    std::cout << v_indices[0] << ", " << v_indices[1] << ", " << v_indices[2] << std::endl;
+    std::cout << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
+    
+    std::cout << "\n=== Vertex Data ===" << std::endl;
+    for(int i = 0; i < std::min(100, (int)v_indices.size()); i += 3) {
+        std::cout << "Vertex " << (i/3) << ": " 
+                << v_indices[i] << ", " 
+                << v_indices[i+1] << ", " 
+                << v_indices[i+2] << std::endl;
+    }
+    drawer->create_vbo(v_indices, indices, vt_indices, vn_indices);
+    // drawer->setup_face_colors(verts_indices);
     // create_vertex_array(verts, normals, textcords, converted_v, converted_vn, converted_vt);
 
+    
     XEvent e;
     Atom wmDeleteMessage = XInternAtom(main_display, "WM_DELETE_WINDOW", False);
+    GLsizei indice_size = static_cast<GLsizei>(indices.size());
     XSetWMProtocols(main_display, main_window, &wmDeleteMessage, 1);
     while(1) {
         while (XPending(main_display)) {
@@ -108,6 +122,7 @@ void Scop_window::hold_open() {
         glLoadIdentity();
         
         gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
+        // Create Scale calc
         // glScalef(0.5f, 0.5f, 0.5f);
         
         GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
@@ -142,7 +157,10 @@ void Scop_window::hold_open() {
         //     amount++;
         // }
         // glEnd();
-        drawer->draw_triangle(verts);
+        // drawer->draw_triangle(verts);
+
+        drawer->render_vbo(indice_size);
+
         glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
         glFlush();
         drawer->inc_rl_rotation(0.005f);
@@ -163,16 +181,39 @@ void Scop_window::setup_face_colors(int face) {
     glColor3f(gray, gray, gray);
 }
 
-void Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
+#include <cmath>
+
+std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
     for (std::vector<inner_elements>::iterator list_it = node.begin(); list_it != node.end(); list_it++) {
         v.push_back(list_it->v);
         vn.push_back(list_it->vn);
         vt.push_back(list_it->vt);
     }
 
-    std::vector<std::vector<std::array<double, 3>>> converted_v = split_and_group(v);
+    std::vector<std::vector<std::array<double, 3>>> converted_v = v;
     std::vector<std::vector<std::array<double, 2>>> converted_vt;
     std::vector<std::vector<std::array<double, 3>>> converted_vn;
+    std::vector<unsigned int> indices = split_and_group(converted_v, faces->get_indices());
+    std::vector<unsigned int> temp;
+    // for (std::vector<std::vector<std::array<double, 3>>>::iterator it = converted_v.begin(); it != converted_v.end(); it++) {
+    //     for (std::vector<std::array<double, 3>>::iterator inner = it->begin(); inner != it->end(); inner++) {
+    //         std::cout << (*inner)[0] << ", " << (*inner)[1] << ", " << (*inner)[2] << std::endl;
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // std::cout << std::endl << std::endl << std::endl << std::endl;    
+    // int position = 1;
+    // std::cout << "Indices:\n";
+    for (std::vector<unsigned int>::iterator inner = indices.begin(); inner != indices.end(); inner++) {
+        temp.push_back(*inner);
+        // temp.push_back(*inner - 1);
+        // std::cout << *inner << ", ";
+        // if (position % 3 == 0)
+        //     std::cout << "\n";
+        // position++;
+    }
+    
+    // std::cout << std::endl;
     if (vt.size() > 0)
         converted_vt = split_and_group(vt);
     if (vn.size() > 0)
@@ -181,25 +222,17 @@ void Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<
     reallign_highest_point(converted_v, 0);
     reallign_highest_point(converted_v, 1);
     reallign_highest_point(converted_v, 2);
+    
 
     v = converted_v;
     vt = converted_vt;
     vn = converted_vn;
+    return temp;
 }
 
-// void Scop_window::create_vertex_array(std::vector<GLfloat> &verts, std::vector<GLfloat> &normals, std::vector<GLfloat> &textcords, std::vector<std::vector<std::array<double, 3>>>& v,std::vector<std::vector<std::array<double, 3>>>& vt, std::vector<std::vector<std::array<double, 2>>>& vn) {
-//     for (std::vector<std::vector<std::array<double, 3>>>::iterator verts_it = converted_v.begin(); verts_it != converted_v.end(); verts_it++) {
-//         for (std::vector<std::array<double, 3>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
-//             verts.push_back((*pos_it)[0]);
-//             verts.push_back((*pos_it)[1]);
-//             verts.push_back((*pos_it)[2]);
-//         }
-//     }
-// }
-
-void Scop_window::create_vertex_array(std::vector<GLfloat>& va_v, std::vector<std::vector<std::array<double, 3>>>& v) {
-    glgenBuffer();
-    va_v.clear();
+std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>& v) {
+    std::vector<GLfloat> va_v;
+    
     for (std::vector<std::vector<std::array<double, 3>>>::iterator verts_it = v.begin(); verts_it != v.end(); verts_it++) {
         for (std::vector<std::array<double, 3>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
             va_v.push_back(static_cast<GLfloat>((*pos_it)[0]));
@@ -207,10 +240,19 @@ void Scop_window::create_vertex_array(std::vector<GLfloat>& va_v, std::vector<st
             va_v.push_back(static_cast<GLfloat>((*pos_it)[2]));
         }
     }
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, va_v.data());
-    glDrawArrays(GL_TRIANGLES, 0, va_v.size());
-    glDisableClientState(GL_VERTEX_ARRAY);
+    return va_v;
+}
+
+std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 2>>>& v) {
+    std::vector<GLfloat> va_v;
+    
+    for (std::vector<std::vector<std::array<double, 2>>>::iterator verts_it = v.begin(); verts_it != v.end(); verts_it++) {
+        for (std::vector<std::array<double, 2>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
+            va_v.push_back(static_cast<GLfloat>((*pos_it)[0]));
+            va_v.push_back(static_cast<GLfloat>((*pos_it)[1]));
+        }
+    }
+    return va_v;
 }
 
 void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {

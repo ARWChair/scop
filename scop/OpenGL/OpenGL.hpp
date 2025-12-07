@@ -1,7 +1,11 @@
 #include <vector>
-#include <GL/gl.h>
+// #include "../Draw/Draw.hpp"
+#include "../../GL/glew.h"
+// #include <GL/gl.h>
+// #include <GL/glx.h>
+// #include <GL/glu.h>
 #include <GL/glx.h>
-#include <GL/glu.h>
+// #include <GL/glext.h>
 #include <exception>
 #include <iostream>
 #include "../Window/Window.hpp"
@@ -54,6 +58,12 @@ class Scop_openGL {
                 const char* what() const throw() {
                     return "Error while executing MakeCurrent";
                 }
+        };
+        class GlewCreationFailed : public std::exception {
+            public:
+            virtual const char* what() const throw() {
+                return "Error while initializing Glew";
+            }
         };
     protected:
     private:
