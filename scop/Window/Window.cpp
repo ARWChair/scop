@@ -456,20 +456,33 @@ std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements
         vt.push_back(list_it->vt);
     }
 
+    std::vector<std::vector<std::array<double, 3>>>::iterator v_it = v.begin();
+    std::vector<std::vector<std::array<double, 3>>>::iterator vn_it = vn.begin();
+    std::vector<std::vector<std::array<double, 2>>>::iterator vt_it = vt.begin();
+    for (; v_it != v.end(); v_it++, vn_it++, vt_it++) {
+        std::vector<std::array<double, 3>>::iterator v_inner = v_it->begin();
+        std::vector<std::array<double, 3>>::iterator vn_inner = vn_it->begin();
+        std::vector<std::array<double, 2>>::iterator vt_inner = vt_it->begin();
+        for (; v_inner != v_it->end(); v_inner++, vn_inner++, vt_inner++) {
+            std::cout << (*v_inner)[0] << "/" << (*vt_inner)[0] << "/" << (*vn_inner)[0] << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
     std::vector<std::vector<std::array<double, 3>>> converted_v = v;
     std::vector<std::vector<std::array<double, 2>>> converted_vt;
     std::vector<std::vector<std::array<double, 3>>> converted_vn;
     std::vector<unsigned int> indices = split_and_group(converted_v, faces->get_indices());
     std::cout << "Size: " << indices.size() << std::endl;
-    converted_v = split_and_group(v);
-    if (vt.size() > 0)
-        converted_vt = split_and_group(vt);
-    if (vn.size() > 0)
-        converted_vn = split_and_group(vn);
+    // converted_v = split_and_group(v);
+    // if (vt.size() > 0)
+    //     converted_vt = split_and_group(vt);
+    // if (vn.size() > 0)
+    //     converted_vn = split_and_group(vn);
 
-    reallign_highest_point(converted_v, 0);
-    reallign_highest_point(converted_v, 1);
-    reallign_highest_point(converted_v, 2);
+    // reallign_highest_point(converted_v, 0);
+    // reallign_highest_point(converted_v, 1);
+    // reallign_highest_point(converted_v, 2);
     
 
     v = converted_v;
