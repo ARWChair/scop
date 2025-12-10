@@ -6,6 +6,12 @@
 #include <cmath>
 #pragma once
 
+struct FinalVertex {
+    float px, py, pz;
+    float nx, ny, nz;
+    float u, v;
+};
+
 class Faces;
 
 class Draw {
@@ -25,6 +31,10 @@ class Draw {
         void draw_triangle(std::vector<GLfloat>& f);
         void setup_face_colors(std::vector<GLfloat>& verts);
         void draw_texture(Material *&material);
+        void create_vbo(std::vector<GLfloat>&, std::vector<unsigned int>&);
+        void render_vbo(GLsizei verts, bool state);
+        void draw_individual_text(std::array<double, 3UL> type, int16_t type_name);
+        void split_elements(std::vector<inner_elements>&);
 
         double const &get_ud_rotation() const;
         double const &get_rl_rotation() const;
@@ -37,10 +47,18 @@ class Draw {
         void set_faces(Faces*& faces);
         void set_xPos(double x);
         void set_yPos(double y);
+        void set_vt(bool value);
+        void set_vn(bool value);
+        
+        GLuint get_v_int() {
+            return v_int;
+        }
     protected:
     private:
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
         Faces       *faces;
-        double rl_rot, ud_rot, xPos, yPos;
+        GLuint      v_int, v_ind, vn_int, vt_int;
+        double      rl_rot, ud_rot, xPos, yPos;
+        bool        vn_bool, vt_bool;
 };

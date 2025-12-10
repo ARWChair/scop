@@ -5,7 +5,7 @@
 #include "../Material/Material.hpp"
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
-scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f)
+scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vn_bool(false), vt_bool(false)
 {}
 
 Draw& Draw::operator=(const Draw& copy) {
@@ -18,7 +18,14 @@ Draw& Draw::operator=(const Draw& copy) {
     return *this;
 }
 
-Draw::~Draw() {}
+Draw::~Draw() {
+    glDeleteBuffers(1, &v_int);
+    glDeleteBuffers(1, &v_ind);
+    // if (vn_bool == true)
+    //     glDeleteBuffers(1, &vn_int);
+    // if (vt_bool == true)
+    //     glDeleteBuffers(1, &vt_int);
+}
 
 void Draw::make_current(GLXDrawable drawable) {
     scop_openGL.make_current(drawable);
@@ -98,6 +105,136 @@ void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&materi
     glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
+void Draw::split_elements(std::vector<inner_elements>& node) {
+    std::vector<inner_elements> temp;
+
+    for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++) {
+        if (it->v.size() == 3) {
+            temp.push_back(*it);
+        } else if (it->v.size() == 4) {
+            inner_elements temp_inner;
+
+            temp_inner.v.push_back(it->v[0]);
+            temp_inner.v.push_back(it->v[1]);
+            temp_inner.v.push_back(it->v[2]);
+            temp_inner.vt.push_back(it->vt[0]);
+            temp_inner.vt.push_back(it->vt[1]);
+            temp_inner.vt.push_back(it->vt[2]);
+            temp_inner.vn.push_back(it->vn[0]);
+            temp_inner.vn.push_back(it->vn[1]);
+            temp_inner.vn.push_back(it->vn[2]);
+            temp.push_back(temp_inner);
+            temp_inner.v.clear();
+            temp_inner.vt.clear();
+            temp_inner.vn.clear();
+            temp_inner.v.push_back(it->v[0]);
+            temp_inner.v.push_back(it->v[2]);
+            temp_inner.v.push_back(it->v[3]);
+            temp_inner.vt.push_back(it->vt[0]);
+            temp_inner.vt.push_back(it->vt[2]);
+            temp_inner.vt.push_back(it->vt[3]);
+            temp_inner.vn.push_back(it->vn[0]);
+            temp_inner.vn.push_back(it->vn[2]);
+            temp_inner.vn.push_back(it->vn[3]);
+            temp.push_back(temp_inner);
+        } else {            
+            for (unsigned long i = 1; i < it->v.size() - 1; i++) {
+                inner_elements temp_inner;
+
+                temp_inner.v.push_back(it->v[0]);
+                temp_inner.v.push_back(it->v[i]);
+                temp_inner.v.push_back(it->v[i + 1]);
+                temp_inner.vt.push_back(it->vt[0]);
+                temp_inner.vt.push_back(it->vt[i]);
+                temp_inner.vt.push_back(it->vt[i + 1]);
+                temp_inner.vn.push_back(it->vn[0]);
+                temp_inner.vn.push_back(it->vn[i]);
+                temp_inner.vn.push_back(it->vn[i + 1]);
+                temp.push_back(temp_inner);
+            }
+        }
+    }
+    node = temp;
+}
+
+void Draw::create_vbo(std::vector<GLfloat>& data, std::vector<unsigned int>& indices) {
+    glGenBuffers(1, &v_int);
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(GLfloat), data.data(), GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &v_ind);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Draw::render_vbo(GLsizei indexCount, bool state)
+{
+    std::size_t offset_color = 3;
+    if (vt_bool)
+        offset_color += 2;
+    if (vn_bool)
+        offset_color += 3;
+    offset_color *= sizeof(GLfloat);
+
+    GLsizei stride = 3;
+    if (vt_bool)
+        stride += 2;
+    if (vn_bool)
+        stride += 3;
+    stride += 4;
+    stride *= sizeof(GLfloat);
+
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, stride, (void*)0);
+    if (vt_bool == true) {
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glTexCoordPointer(2, GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
+    }
+    if (vn_bool == true) {
+        glEnableClientState(GL_NORMAL_ARRAY);
+        if (vt_bool == false)
+            glNormalPointer(GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
+        else
+            glNormalPointer(GL_FLOAT, stride, (void*)(5 * sizeof(GLfloat)));
+    }
+
+    if (state) {
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4, GL_FLOAT, stride, (void*)offset_color);
+        glDisable(GL_COLOR_MATERIAL);
+    } else {
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4, GL_FLOAT, stride, (void*)offset_color);
+        glEnable(GL_COLOR_MATERIAL);
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    if (vt_bool == true)
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    if (vn_bool == true)
+        glDisableClientState(GL_NORMAL_ARRAY);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Draw::set_vn(bool value) {
+    vn_bool = value;
+}
+
+void Draw::set_vt(bool value) {
+    vt_bool = value;
+}
+
 void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
     glDisable(GL_LIGHTING);
     if (vertices.empty()) return;
@@ -164,7 +301,7 @@ void Draw::setup_face_colors(std::vector<GLfloat>& verts) {
     }
 }
 
-void draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
+void Draw::draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
     if (type.size() != 0) {
         float scale = 1;
         if (type_name == GL_AMBIENT)
@@ -175,7 +312,7 @@ void draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
             static_cast<GLfloat>(type[2]) * scale,
             static_cast<GLfloat>(1.0f)
         };
-        glMaterialfv(GL_FRONT, type_name, k);
+        glMaterialfv(GL_FRONT_AND_BACK, type_name, k);
     }
 }
 

@@ -2,15 +2,22 @@
 #include "../Faces/Faces.hpp"
 
 Material::Material(std::string filename, Faces *&faces) {
-    this->faces = faces;
-    set_filename(filename);
-    load_entities();
-    if (missing == true) {
-        create_mtl_file();
+    if (filename.length() == 0) {
+        std::cout << "Missing" << std::endl;
+        missing = true;
+    } else {
+        this->faces = faces;
+        set_filename(filename);
         load_entities();
+        if (missing == true) {
+            std::cout << "Missing" << std::endl;
+            create_mtl_file();
+            load_entities();
+        }
+        std::cout << "Not missing" << std::endl;
+        split();
+        check_and_fill();
     }
-    split();
-    check_and_fill();
 }
 
 Material::~Material() {}
@@ -41,8 +48,8 @@ void Material::check_and_fill() {
 
     for (; it != temp.end(); it++) {
         if (it->name == faces->get_material_from_file()) {
-            break;
             found = true;
+            break;
         }
     }
     if (found == true)

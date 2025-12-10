@@ -1,8 +1,9 @@
+#include "../../GL/glew.h"
 #include <exception>
-#include <GL/gl.h>
 #include <fstream>   
 #include <sstream>
 #include <iostream>
+#include <string>
 #include <vector>
 #include <string>
 #include <cfloat>
@@ -10,9 +11,9 @@
 #pragma once
 
 typedef struct inner_elements {
-    std::vector<std::array<double, 3>> v;
-    std::vector<std::array<double, 3>> vn;
-    std::vector<std::array<double, 2>> vt;
+    std::vector<unsigned int> v;
+    std::vector<unsigned int> vn;
+    std::vector<unsigned int> vt;
 }               inner_elements;
 
 typedef struct v_vn_vt {
@@ -21,11 +22,29 @@ typedef struct v_vn_vt {
     std::vector<std::vector<double>> vn_full;
 }               v_vn_vt;
 
+typedef struct flat {
+    std::vector<GLfloat> vertexes;
+    std::vector<GLfloat> textures;
+    std::vector<GLfloat> normals;
+}               flat;
+
+typedef struct flat_indices {
+    std::vector<unsigned int> vertexes_indice;
+    std::vector<unsigned int> textures_indice;
+    std::vector<unsigned int> normals_indice;
+}               flat_indices;
+
+
+
+
 typedef struct v_vn_vt_layer {
     std::vector<double> v_full;
     std::vector<double> vt_full;
     std::vector<double> vn_full;
 }               v_vn_vt_layer;
+
+
+
 
 class Faces {
     public:
@@ -37,6 +56,9 @@ class Faces {
         const std::string& get_material_file_name() const;
         const std::string& get_material_from_file() const;
         const std::vector<inner_elements>& get_list() const;
+        const flat_indices& get_indices() const;
+        std::vector<inner_elements> triangulate(std::vector<std::vector<std::string>>&);
+        const flat& get_flattened() const;
         const int& get_amount() const;
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
@@ -64,10 +86,13 @@ class Faces {
                 }
         };
     private:
+        flat flatten_faces(v_vn_vt*&);
+        inner_elements split_in_elems(std::vector<std::string>&);
         int load_lanes_from_obj();
         v_vn_vt *split_parts();
-        int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
+        // int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         void save_material_file_name();
+        // void save_faces_indices(std::vector<std::vector<std::string>>&);
 
         std::vector<std::string> lines;
         std::string material_from_file;
@@ -75,6 +100,8 @@ class Faces {
         std::string filecontent;
         std::string filename;
         std::vector<inner_elements> list;
+        flat_indices indices;
+        flat flattened;
         int amount;
 };
 
@@ -84,6 +111,7 @@ class Faces {
 // Display first triangle
 // try do draw it in 3d space
 
+std::vector<unsigned int> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces, std::vector<std::vector<unsigned int>> indices);
 std::vector<std::vector<std::array<double, 3>>> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces);
 std::vector<std::vector<std::array<double, 2>>> split_and_group(std::vector<std::vector<std::array<double, 2>>> &faces);
-void reallign_highest_point(std::vector<std::vector<std::array< double, 3>>> &faces, int id);
+void reallign_highest_point(std::vector<GLfloat> &faces, int id, int stride = 3);
