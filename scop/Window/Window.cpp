@@ -69,263 +69,75 @@ void Scop_window::create_window() {
     XMapWindow(main_display, main_window);
 }
 
-void force_outward_normals(std::vector<GLfloat>& vertices, 
-                          std::vector<GLfloat>& normals) {
-    float center[3] = {0,0,0};
-    
-    // Berechne Center
-    for(size_t i = 0; i < vertices.size(); i += 3) {
-        center[0] += vertices[i];
-        center[1] += vertices[i+1];
-        center[2] += vertices[i+2];
+std::vector<GLfloat> Scop_window::summarize_vectors(flat_indices& flattened, flat &values) {
+    std::vector<GLfloat> summarized;
+    std::size_t current = 0;
+    bool vt, vn;
+    vt = vn = false;
+    float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
+
+    std::vector<unsigned int>::iterator v_it = flattened.vertexes_indice.begin();
+    std::vector<unsigned int>::iterator vt_it = flattened.textures_indice.begin();
+    std::vector<unsigned int>::iterator vn_it = flattened.normals_indice.begin();
+    if (vt_it != flattened.textures_indice.end()) {
+        vt = true;
+        drawer->set_vt(true);
     }
-    center[0] /= vertices.size() / 3;
-    center[1] /= vertices.size() / 3;
-    center[2] /= vertices.size() / 3;
-    
-    // Normals = Richtung von Center zu Vertex
-    normals.clear();
-    for(size_t i = 0; i < vertices.size(); i += 3) {
-        float dx = vertices[i] - center[0];
-        float dy = vertices[i+1] - center[1];
-        float dz = vertices[i+2] - center[2];
-        
-        // Normalisieren
-        float length = sqrt(dx*dx + dy*dy + dz*dz);
-        normals.push_back(dx / length);
-        normals.push_back(dy / length);
-        normals.push_back(dz / length);
+    if (vn_it != flattened.normals_indice.end()) {
+        vn = true;
+        drawer->set_vn(true);
     }
-}
-
-// void test_with_simple_normals(GLuint v_int, std::vector<GLfloat> v_indices) {
-//     std::cout << "\n=== TEST WITH SIMPLE NORMALS ===" << std::endl;
-    
-//     // 1. EINFACHSTE Normals (alle nach vorne)
-//     std::vector<GLfloat> simple_normals;
-//     int vertex_count = v_indices.size() / 3;
-//     for(int i = 0; i < vertex_count; i++) {
-//         simple_normals.push_back(0.0f);   // X
-//         simple_normals.push_back(0.0f);   // Y
-//         simple_normals.push_back(1.0f);   // Z (nach vorne)
-//     }
-    
-//     // 2. Normal Buffer erstellen
-//     GLuint normal_buffer;
-//     glGenBuffers(1, &normal_buffer);
-//     glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-//     glBufferData(GL_ARRAY_BUFFER, 
-//                  simple_normals.size() * sizeof(GLfloat),
-//                  simple_normals.data(),
-//                  GL_STATIC_DRAW);
-    
-//     std::cout << "Created simple normals buffer: " 
-//               << simple_normals.size() << " floats" << std::endl;
-    
-//     // 3. LIGHTING SETUP (einfach)
-//     glEnable(GL_LIGHTING);
-//     glEnable(GL_LIGHT0);
-    
-//     GLfloat light_pos[] = {0.0f, 0.0f, 5.0f, 1.0f};  // Licht von vorne
-//     GLfloat light_ambient[] = {0.5f, 0.5f, 0.5f, 1.0f};
-//     GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    
-//     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-//     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-//     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    
-//     std::cout << "Lighting enabled, light at: " 
-//               << light_pos[0] << ", " << light_pos[1] << ", " << light_pos[2] << std::endl;
-    
-//     // 4. EINFACHES Material (ROT)
-//     GLfloat material_ambient[] = {0.2f, 0.0f, 0.0f, 1.0f};
-//     GLfloat material_diffuse[] = {1.0f, 0.0f, 0.0f, 1.0f};  // KNALLROT
-//     GLfloat material_specular[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    
-//     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material_ambient);
-//     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffuse);
-//     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_specular);
-//     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
-    
-//     std::cout << "Material set to RED" << std::endl;
-    
-//     // 5. RENDERN
-//     // Vertex Buffer
-//     glBindBuffer(GL_ARRAY_BUFFER, v_int);
-//     glEnableClientState(GL_VERTEX_ARRAY);
-//     glVertexPointer(3, GL_FLOAT, 0, 0);
-    
-//     // Normal Buffer (unsere einfachen)
-//     glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-//     glEnableClientState(GL_NORMAL_ARRAY);
-//     glNormalPointer(GL_FLOAT, 0, 0);
-    
-//     std::cout << "Drawing " << vertex_count << " vertices..." << std::endl;
-    
-//     // Draw
-//     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-    
-//     // 6. CLEANUP
-//     glDisableClientState(GL_VERTEX_ARRAY);
-//     glDisableClientState(GL_NORMAL_ARRAY);
-//     glBindBuffer(GL_ARRAY_BUFFER, 0);
-//     glDeleteBuffers(1, &normal_buffer);
-    
-//     // 7. ERROR CHECK
-//     GLenum error = glGetError();
-//     if(error == GL_NO_ERROR) {
-//         std::cout << "SUCCESS: No OpenGL errors" << std::endl;
-//     } else {
-//         std::cout << "ERROR: OpenGL error " << error << std::endl;
-//     }
-// }
-
-void test_with_normals_only(GLuint v_int, std::vector<GLfloat> v_indices) {
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    
-    // 2. Einfache feste Farbe
-    glColor3f(1.0f, 0.0f, 0.0f);  // KNALLROT
-    
-    // 3. Nur Vertex Buffer
-    glBindBuffer(GL_ARRAY_BUFFER, v_int);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    
-    // 4. DrawArrays (keine Indices)
-    GLsizei vertex_count = v_indices.size() / 3;
-    glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-    
-    // 5. Cleanup
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void setup_proper_lighting() {
-    // 1. GLOBAL AMBIENT (wichtigstes!)
-    GLfloat global_ambient[] = {0.4f, 0.4f, 0.4f, 1.0f};  // 40% Helligkeit überall
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-    
-    // 2. MAIN LIGHT (Key Light)
-    glEnable(GL_LIGHT0);
-    
-    // Licht von OBEN-VORNE (nicht direkt vorne)
-    GLfloat light0_pos[] = {0.0f, 5.0f, 5.0f, 1.0f};  // Oben-vorne
-    GLfloat light0_ambient[] = {0.3f, 0.3f, 0.3f, 1.0f};
-    GLfloat light0_diffuse[] = {0.7f, 0.7f, 0.7f, 1.0f};
-    
-    glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
-    
-    // 3. FILL LIGHT (von der Seite)
-    glEnable(GL_LIGHT1);
-    GLfloat light1_pos[] = {5.0f, 0.0f, 0.0f, 1.0f};  // Rechts
-    GLfloat light1_diffuse[] = {0.3f, 0.3f, 0.3f, 1.0f};  // Schwächer
-    
-    glLightfv(GL_LIGHT1, GL_POSITION, light1_pos);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
-    
-    // 4. BACK LIGHT (von hinten)
-    glEnable(GL_LIGHT2);
-    GLfloat light2_pos[] = {0.0f, 0.0f, -5.0f, 1.0f};  // Hinten
-    GLfloat light2_diffuse[] = {0.2f, 0.2f, 0.2f, 1.0f};  // Sehr schwach
-    
-    glLightfv(GL_LIGHT2, GL_POSITION, light2_pos);
-    glLightfv(GL_LIGHT2, GL_DIFFUSE, light2_diffuse);
-    
-    // 5. TWO-SIDED LIGHTING
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-    
-    std::cout << "Lighting: 3-point setup (key, fill, back) + ambient" << std::endl;
-}
-
-
-
-
-
-void create_flat_arrays(
-    const std::vector<inner_elements>& faces,
-    std::vector<GLfloat>& vertex_buffer,
-    std::vector<GLfloat>& normal_buffer,
-    std::vector<GLfloat>& tex_buffer
-) {
-    vertex_buffer.clear();
-    normal_buffer.clear();
-    tex_buffer.clear();
-
-    for (const auto& face : faces) {
-        size_t count = face.v.size();  // Anzahl Vertices in diesem Face
-
-        for (size_t i = 0; i < count; i++) {
-
-            // -------- Position (v) --------
-            vertex_buffer.push_back(face.v[i][0]);
-            vertex_buffer.push_back(face.v[i][1]);
-            vertex_buffer.push_back(face.v[i][2]);
-
-            // -------- Normale (vn) --------
-            if (i < face.vn.size()) {
-                normal_buffer.push_back(face.vn[i][0]);
-                normal_buffer.push_back(face.vn[i][1]);
-                normal_buffer.push_back(face.vn[i][2]);
-            } else {
-                // Falls OBJ keine Normale hat → default: 0,0,1
-                normal_buffer.push_back(0.0f);
-                normal_buffer.push_back(0.0f);
-                normal_buffer.push_back(1.0f);
-            }
-
-            // -------- UV (vt) --------
-            if (i < face.vt.size()) {
-                tex_buffer.push_back(face.vt[i][0]);
-                tex_buffer.push_back(face.vt[i][1]);
-            } else {
-                tex_buffer.push_back(0.0f);
-                tex_buffer.push_back(0.0f);
-            }
+    for (; v_it != flattened.vertexes_indice.end(); v_it++) {
+        summarized.push_back(values.vertexes[(*v_it) * 3]);
+        summarized.push_back(values.vertexes[((*v_it) * 3) + 1]);
+        summarized.push_back(values.vertexes[((*v_it) * 3) + 2]);
+        if (vt == true) {
+            summarized.push_back(values.textures[(*vt_it) * 2]);
+            summarized.push_back(values.textures[((*vt_it) * 2) + 1]);
+            vt_it++;
         }
+        if (vn == true) {
+            summarized.push_back(values.normals[(*vn_it) * 3]);
+            summarized.push_back(values.normals[((*vn_it) * 3) + 1]);
+            summarized.push_back(values.normals[((*vn_it) * 3) + 2]);
+            vn_it++;
+        } else {
+            summarized.push_back(0.0f);
+            summarized.push_back(0.0f);
+            summarized.push_back(1.0f);
+            drawer->set_vn(true);
+        }
+        float gray = grayValues[current % 6];
+        GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
+        summarized.push_back(faceColor[0]);
+        summarized.push_back(faceColor[1]);
+        summarized.push_back(faceColor[2]);
+        summarized.push_back(faceColor[3]);
+        current++;
+        std::cout << summarized.size() << std::endl;
     }
+    return summarized;
 }
-
 
 void Scop_window::hold_open() {
-    std::vector<inner_elements> node = faces->get_list();
-    std::vector<std::vector<std::array<double, 3>>> v;
-    std::vector<std::vector<std::array<double, 3>>> vn;
-    std::vector<std::vector<std::array<double, 2>>> vt;
-    std::vector<unsigned int> indices = create_vectors(node, v, vn, vt);
-    std::vector<GLfloat> v_indices, vt_indices, vn_indices;
+    flat_indices indices = faces->get_indices();
+    flat flattened = faces->get_flattened();
+    reallign_highest_point(flattened.vertexes, 0);
+    reallign_highest_point(flattened.vertexes, 1);
+    reallign_highest_point(flattened.vertexes, 2);
+    std::vector<GLfloat> concatinated_vector = summarize_vectors(indices, flattened);
+    std::string mat_name = "Material";
+    std::vector<unsigned int> indice;
 
-    v_indices = create_GLfloat_array(v);
-    vn_indices = create_GLfloat_array(vn);
-    vt_indices = create_GLfloat_array(vt);
+    for (unsigned int pos = 0; pos < indices.normals_indice.size(); pos++) {
+        indice.push_back(pos);
+    }
+    drawer->create_vbo(concatinated_vector, indice);
 
-    // create_flat_arrays(node, v_indices, vn_indices, vt_indices);
-    // reallign_highest_point(v_indices, 0);
-    // reallign_highest_point(v_indices, 1);
-    // reallign_highest_point(v_indices, 2);
 
-    for (std::vector<unsigned int>::iterator it = indices.begin(); it != indices.end(); it++)
-        std::cout << *it << ", ";
-    // indices.clear();
-    // for (unsigned int pos = 0; pos < v_indices.size(); pos++)
-    //     indices.push_back(pos);
-    std::cout << std::endl;
-    drawer->create_vbo(v_indices, indices, vt_indices, vn_indices);
-    std::string mat_name = faces->get_material_from_file();;
-    std::cout << mat_name << std::endl;
-    std::cout << "Size: " << vn_indices.size() << std::endl;
-    // force_outward_normals(v_indices, vn_indices);
-    // drawer->setup_face_colors(verts_indices);
-    // create_vertex_array(verts, normals, textcords, converted_v, converted_vn, converted_vt);
-
-    
     XEvent e;
     Atom wmDeleteMessage = XInternAtom(main_display, "WM_DELETE_WINDOW", False);
-    GLsizei indice_size = static_cast<GLsizei>(indices.size());
+    GLsizei indice_size = static_cast<GLsizei>(concatinated_vector.size());
     XSetWMProtocols(main_display, main_window, &wmDeleteMessage, 1);
     while(1) {
         while (XPending(main_display)) {
@@ -352,18 +164,6 @@ void Scop_window::hold_open() {
         // Create Scale calc
         // glScalef(0.5f, 0.5f, 0.5f);
         
-        GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
-        glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-        
-        glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
-        glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
-        glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
-
-        apply_material(mat_name);
-        // if (drawer->has_texture()) {
-        //     glEnable(GL_TEXTURE_2D);
-        //     glBindTexture(GL_TEXTURE_2D, drawer->get_texture_id);
-        // }
         GLfloat light_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
         GLfloat light_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
         GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -373,8 +173,23 @@ void Scop_window::hold_open() {
         glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
         glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        
+        glTranslatef(drawer->get_xPos(), drawer->get_yPos(), 0.0f);
+        glRotatef(drawer->get_rl_rotation() * 90.0f, 0.0f, 1.0f, 0.0f);
+        glRotatef(drawer->get_ud_rotation() * 90.0f, 1.0f, 0.0f, 0.0f);
 
-        drawer->render_vbo(indice_size / 3);
+
+        // std::cout << "HERE2" << std::endl;
+        apply_material(mat_name);
+        // std::cout << "HERE2" << std::endl;
+        // if (drawer->has_texture()) {
+        //     glEnable(GL_TEXTURE_2D);
+        //     glBindTexture(GL_TEXTURE_2D, drawer->get_texture_id);
+        // }
+
+        // std::cout << "HERE3" << std::endl;
+        drawer->render_vbo(indice_size, toggle);
+        // std::cout << "HERE4" << std::endl;
         // (void)indice_size;
         // test_with_normals_only(drawer->get_v_int(), v_indices);
         // test_with_simple_normals(drawer->get_v_int(), v_indices);
@@ -413,12 +228,15 @@ void Scop_window::apply_material(std::string& material_name) {
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, default_specular);
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
         glColor3f(0.8f, 0.8f, 0.8f);
+        // std::cout << "lol" << std::endl;
         return;
     }
+    // std::cout << "lol" << std::endl;
     
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     
+    // std::cout << "lol2" << std::endl;
     drawer->draw_individual_text(material->get_Ka(material_name), GL_AMBIENT);
     auto Kd = material->get_Kd(material_name);
     if(!Kd.empty()) {
@@ -449,31 +267,73 @@ void Scop_window::apply_material(std::string& material_name) {
     }
 }
 
-std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
-    for (std::vector<inner_elements>::iterator list_it = node.begin(); list_it != node.end(); list_it++) {
-        v.push_back(list_it->v);
-        vn.push_back(list_it->vn);
-        vt.push_back(list_it->vt);
-    }
+// std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<std::vector<std::array<double, 3>>>& v, std::vector<std::vector<std::array<double, 3>>>& vn, std::vector<std::vector<std::array<double, 2>>>& vt) {
+void Scop_window::create_vectors(std::vector<inner_elements>& node, std::vector<GLfloat>& v, std::vector<GLfloat>& vn, std::vector<GLfloat>& vt) {
+    // std::vector<std::array<double, 3>> converted_v;
+    // std::vector<std::array<double, 2>> converted_vt;
+    // std::vector<std::array<double, 3>> converted_vn;
 
-    std::vector<std::vector<std::array<double, 3>>>::iterator v_it = v.begin();
-    std::vector<std::vector<std::array<double, 3>>>::iterator vn_it = vn.begin();
-    std::vector<std::vector<std::array<double, 2>>>::iterator vt_it = vt.begin();
-    for (; v_it != v.end(); v_it++, vn_it++, vt_it++) {
-        std::vector<std::array<double, 3>>::iterator v_inner = v_it->begin();
-        std::vector<std::array<double, 3>>::iterator vn_inner = vn_it->begin();
-        std::vector<std::array<double, 2>>::iterator vt_inner = vt_it->begin();
-        for (; v_inner != v_it->end(); v_inner++, vn_inner++, vt_inner++) {
-            std::cout << (*v_inner)[0] << "/" << (*vt_inner)[0] << "/" << (*vn_inner)[0] << std::endl;
-        }
-        std::cout << std::endl;
-    }
 
-    std::vector<std::vector<std::array<double, 3>>> converted_v = v;
-    std::vector<std::vector<std::array<double, 2>>> converted_vt;
-    std::vector<std::vector<std::array<double, 3>>> converted_vn;
-    std::vector<unsigned int> indices = split_and_group(converted_v, faces->get_indices());
-    std::cout << "Size: " << indices.size() << std::endl;
+    (void)v;
+    (void)vn;
+    (void)vt;
+    // std::cout << "Before" << std::endl;
+    // for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++)
+    //     std::cout << it->v.size() << ", ";
+    // std::cout << std::endl << std::endl;
+    // std::cout << "After" << std::endl;
+    drawer->split_elements(node);
+    // for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++)
+    //     std::cout << it->v.size() << ", ";
+    // std::cout << std::endl;
+
+    // for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++) {
+    //     std::vector<std::array<double, 3>>::iterator inner_vn = it->vn.begin();
+    //     std::vector<std::array<double, 2>>::iterator inner_vt = it->vt.begin();
+    //     for (std::vector<std::array<double, 3>>::iterator inner = it->v.begin(); inner != it->v.end(); inner++) {
+    //         std::cout << (*inner)[0] << "/" << (*inner_vt)[0] << "/" << (*inner)[0] << " "
+    //         << (*inner)[1] << "/" << (*inner_vt)[1] << "/" << (*inner_vn)[1] << " "
+    //         << (*inner)[2] << "/" << (*inner_vt)[2] << "/" << (*inner_vn)[2] << std::endl;
+    //         inner_vn++;
+    //         inner_vt++;
+    //     }
+    // }
+    // std::cout << std::endl;
+
+
+    // GLfloat temp;
+    // for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++) {
+    //     for (std::vector<std::array<double, 3>>::iterator inner = it->v.begin(); inner != it->v.end(); inner++) {
+    //         temp = static_cast<GLfloat>((*inner)[0]);
+    //         v.push_back(temp);
+    //         temp = static_cast<GLfloat>((*inner)[1]);
+    //         v.push_back(temp);
+    //         temp = static_cast<GLfloat>((*inner)[2]);
+    //         v.push_back(temp);
+    //     }
+    //     for (std::vector<std::array<double, 3>>::iterator inner = it->vn.begin(); inner != it->vn.end(); inner++) {
+    //         temp = static_cast<GLfloat>((*inner)[0]);
+    //         vn.push_back(temp);
+    //         temp = static_cast<GLfloat>((*inner)[1]);
+    //         vn.push_back(temp);
+    //         temp = static_cast<GLfloat>((*inner)[2]);
+    //         vn.push_back(temp);
+    //     }
+    //     for (std::vector<std::array<double, 2>>::iterator inner = it->vt.begin(); inner != it->vt.end(); inner++) {
+    //         temp = static_cast<GLfloat>((*inner)[0]);
+    //         vt.push_back(temp);
+    //         temp = static_cast<GLfloat>((*inner)[1]);
+    //         vt.push_back(temp);
+    //     }
+    // }
+
+
+    // std::cout << "\n" << v.size() << std::endl;
+
+    // std::vector<std::vector<std::array<double, 3>>> converted_v = v;
+    // std::vector<std::vector<std::array<double, 2>>> converted_vt;
+    // std::vector<std::vector<std::array<double, 3>>> converted_vn;
+    // std::vector<unsigned int> indices = split_and_group(converted_v, faces->get_indices());
     // converted_v = split_and_group(v);
     // if (vt.size() > 0)
     //     converted_vt = split_and_group(vt);
@@ -485,11 +345,11 @@ std::vector<unsigned int> Scop_window::create_vectors(std::vector<inner_elements
     // reallign_highest_point(converted_v, 2);
     
 
-    v = converted_v;
-    vt = converted_vt;
-    vn = converted_vn;
+    // v = converted_v;
+    // vt = converted_vt;
+    // vn = converted_vn;
     // indices.clear();
-    return indices;
+    // return indices;
 }
 
 std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>& v) {

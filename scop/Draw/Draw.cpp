@@ -21,10 +21,10 @@ Draw& Draw::operator=(const Draw& copy) {
 Draw::~Draw() {
     glDeleteBuffers(1, &v_int);
     glDeleteBuffers(1, &v_ind);
-    if (vn_bool == true)
-        glDeleteBuffers(1, &vn_int);
-    if (vt_bool == true)
-        glDeleteBuffers(1, &vt_int);
+    // if (vn_bool == true)
+    //     glDeleteBuffers(1, &vn_int);
+    // if (vt_bool == true)
+    //     glDeleteBuffers(1, &vt_int);
 }
 
 void Draw::make_current(GLXDrawable drawable) {
@@ -105,65 +105,134 @@ void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&materi
     glVertex3f((*it)[0], (*it)[1], (*it)[2]);
 }
 
-void Draw::render_vbo(GLsizei verts) {
+void Draw::split_elements(std::vector<inner_elements>& node) {
+    std::vector<inner_elements> temp;
+
+    for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++) {
+        if (it->v.size() == 3) {
+            temp.push_back(*it);
+        } else if (it->v.size() == 4) {
+            inner_elements temp_inner;
+
+            temp_inner.v.push_back(it->v[0]);
+            temp_inner.v.push_back(it->v[1]);
+            temp_inner.v.push_back(it->v[2]);
+            temp_inner.vt.push_back(it->vt[0]);
+            temp_inner.vt.push_back(it->vt[1]);
+            temp_inner.vt.push_back(it->vt[2]);
+            temp_inner.vn.push_back(it->vn[0]);
+            temp_inner.vn.push_back(it->vn[1]);
+            temp_inner.vn.push_back(it->vn[2]);
+            temp.push_back(temp_inner);
+            temp_inner.v.clear();
+            temp_inner.vt.clear();
+            temp_inner.vn.clear();
+            temp_inner.v.push_back(it->v[0]);
+            temp_inner.v.push_back(it->v[2]);
+            temp_inner.v.push_back(it->v[3]);
+            temp_inner.vt.push_back(it->vt[0]);
+            temp_inner.vt.push_back(it->vt[2]);
+            temp_inner.vt.push_back(it->vt[3]);
+            temp_inner.vn.push_back(it->vn[0]);
+            temp_inner.vn.push_back(it->vn[2]);
+            temp_inner.vn.push_back(it->vn[3]);
+            temp.push_back(temp_inner);
+        } else {            
+            for (unsigned long i = 1; i < it->v.size() - 1; i++) {
+                inner_elements temp_inner;
+
+                temp_inner.v.push_back(it->v[0]);
+                temp_inner.v.push_back(it->v[i]);
+                temp_inner.v.push_back(it->v[i + 1]);
+                temp_inner.vt.push_back(it->vt[0]);
+                temp_inner.vt.push_back(it->vt[i]);
+                temp_inner.vt.push_back(it->vt[i + 1]);
+                temp_inner.vn.push_back(it->vn[0]);
+                temp_inner.vn.push_back(it->vn[i]);
+                temp_inner.vn.push_back(it->vn[i + 1]);
+                temp.push_back(temp_inner);
+            }
+        }
+    }
+    node = temp;
+}
+
+void Draw::create_vbo(std::vector<GLfloat>& data, std::vector<unsigned int>& indices) {
+    glGenBuffers(1, &v_int);
     glBindBuffer(GL_ARRAY_BUFFER, v_int);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(GLfloat), data.data(), GL_STATIC_DRAW);
     
+    glGenBuffers(1, &v_ind);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Draw::render_vbo(GLsizei indexCount, bool state)
+{
+    std::size_t offset_color = 3;
+    if (vt_bool)
+        offset_color += 2;
+    if (vn_bool)
+        offset_color += 3;
+    offset_color *= sizeof(GLfloat);
+
+    GLsizei stride = 3;
+    if (vt_bool)
+        stride += 2;
+    if (vn_bool)
+        stride += 3;
+    stride += 4;
+    stride *= sizeof(GLfloat);
+
+    glBindBuffer(GL_ARRAY_BUFFER, v_int);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, stride, (void*)0);
+    if (vt_bool == true) {
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glTexCoordPointer(2, GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
+    }
     if (vn_bool == true) {
-        glBindBuffer(GL_ARRAY_BUFFER, vn_int);
         glEnableClientState(GL_NORMAL_ARRAY);
-        glNormalPointer(GL_FLOAT, 0, 0);
+        if (vt_bool == false)
+            glNormalPointer(GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
+        else
+            glNormalPointer(GL_FLOAT, stride, (void*)(5 * sizeof(GLfloat)));
     }
 
-    if (vt_bool == true) {
-        glBindBuffer(GL_ARRAY_BUFFER, vt_int);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glTexCoordPointer(2, GL_FLOAT, 0, 0);
+    if (state) {
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4, GL_FLOAT, stride, (void*)offset_color);
+        glDisable(GL_COLOR_MATERIAL);
+    } else {
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4, GL_FLOAT, stride, (void*)offset_color);
+        glEnable(GL_COLOR_MATERIAL);
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     }
-    
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
-    // glDrawElements(GL_TRIANGLES, verts, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_TRIANGLES, 0, verts);
-    
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
     glDisableClientState(GL_VERTEX_ARRAY);
     if (vt_bool == true)
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     if (vn_bool == true)
         glDisableClientState(GL_NORMAL_ARRAY);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Draw::create_vbo(std::vector<GLfloat>&v, std::vector<unsigned int>& v_indices, std::vector<GLfloat>& vn, std::vector<GLfloat>& vt) {
-    glGenBuffers(1, &v_int);
-    glBindBuffer(GL_ARRAY_BUFFER, v_int);
-    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), v.data(), GL_STATIC_DRAW);
-    
-    glGenBuffers(1, &v_ind);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_ind);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
+void Draw::set_vn(bool value) {
+    vn_bool = value;
+}
 
-    if (!vt.empty()) {
-        glGenBuffers(1, &vt_int);
-        glBindBuffer(GL_ARRAY_BUFFER, vt_int);
-        glBufferData(GL_ARRAY_BUFFER, vt.size() * sizeof(GLfloat), vt.data(), GL_STATIC_DRAW);
-        vt_bool = true;
-    }
-
-    if(!vn.empty()) {
-        glGenBuffers(1, &this->vn_int);
-        glBindBuffer(GL_ARRAY_BUFFER, this->vn_int);
-        glBufferData(GL_ARRAY_BUFFER, vn.size() * sizeof(GLfloat), vn.data(), GL_STATIC_DRAW);
-        this->vn_bool = true;
-        std::cout << "Normal buffer created with " << vn.size() << " floats" << std::endl;
-    } else {
-        std::cout << "WARNING: No normal data provided!" << std::endl;
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+void Draw::set_vt(bool value) {
+    vt_bool = value;
 }
 
 void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
