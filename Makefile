@@ -18,7 +18,7 @@ RM = rm -f
 all: $(NAME)
 
 $(NAME): $(OBJS) $(OBJSGLEW)
-	$(CXX) $(OBJS) $(OBJSGLEW) $(LDFLAGS) -o $(NAME)
+	$(CXX) -no-pie $(OBJS) $(OBJSGLEW) $(LDFLAGS) -o $(NAME)
 
 clean:
 	$(RM) $(OBJS)

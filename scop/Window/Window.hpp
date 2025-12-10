@@ -47,9 +47,11 @@ class Scop_window {
     protected:
     private:
         void apply_material(std::string& material_name);
-        std::vector<unsigned int> create_vectors(std::vector<inner_elements>&, std::vector<std::vector<std::array<double, 3>>>&,
-            std::vector<std::vector<std::array<double, 3>>>&, 
-            std::vector<std::vector<std::array<double, 2>>>&);
+        void create_vectors(std::vector<inner_elements>&, std::vector<GLfloat>&, std::vector<GLfloat>&, std::vector<GLfloat>&);
+        std::vector<GLfloat> summarize_vectors(flat_indices& flattened, flat &values);
+        // std::vector<unsigned int> create_vectors(std::vector<inner_elements>&, std::vector<std::vector<std::array<double, 3>>>&,
+        //     std::vector<std::vector<std::array<double, 3>>>&, 
+        //     std::vector<std::vector<std::array<double, 2>>>&);
         std::vector<GLfloat> create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>&);
         std::vector<GLfloat> create_GLfloat_array(std::vector<std::vector<std::array<double, 2>>>&);
 
