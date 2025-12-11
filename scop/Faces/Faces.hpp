@@ -35,17 +35,6 @@ typedef struct flat_indices {
 }               flat_indices;
 
 
-
-
-typedef struct v_vn_vt_layer {
-    std::vector<double> v_full;
-    std::vector<double> vt_full;
-    std::vector<double> vn_full;
-}               v_vn_vt_layer;
-
-
-
-
 class Faces {
     public:
         Faces(std::string filename);
@@ -59,6 +48,7 @@ class Faces {
         const flat_indices& get_indices() const;
         std::vector<inner_elements> triangulate(std::vector<std::vector<std::string>>&);
         const flat& get_flattened() const;
+        const bool& is_missing() const;
         const int& get_amount() const;
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
@@ -90,9 +80,7 @@ class Faces {
         inner_elements split_in_elems(std::vector<std::string>&);
         int load_lanes_from_obj();
         v_vn_vt *split_parts();
-        // int split_in_tree(v_vn_vt *&, std::vector<std::vector<std::string>> &);
         void save_material_file_name();
-        // void save_faces_indices(std::vector<std::vector<std::string>>&);
 
         std::vector<std::string> lines;
         std::string material_from_file;
@@ -102,6 +90,7 @@ class Faces {
         std::vector<inner_elements> list;
         flat_indices indices;
         flat flattened;
+        bool missing;
         int amount;
 };
 

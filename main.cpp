@@ -42,10 +42,11 @@ int main(int argc, char **argv) {
         size_t pos = arg.find_last_of('/');
         arg.erase(pos + 1, arg.length());
         std::string material_name = ((std::string)faces->get_material_file_name());
+        bool state = faces->is_missing();
         if (material_name.length() == 0)
-            material = new Material("", faces);
+            material = new Material("", faces, state);
         else
-            material = new Material(arg + material_name, faces);
+            material = new Material(arg + material_name, faces, state);
         if (material == nullptr) {
             std::cerr << "Error. Material allocation failed" << std::endl;
             goto delete_all_error;

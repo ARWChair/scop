@@ -44,11 +44,18 @@ class Draw {
         void dec_ud_rotation(double delta);
         void inc_rl_rotation(double delta);
         void dec_rl_rotation(double delta);
+        void inc_yPos(double value);
+        void inc_xPos(double value);
         void set_faces(Faces*& faces);
         void set_xPos(double x);
         void set_yPos(double y);
+        void inc_scroll(double value);
+        void dec_scroll(double value);
         void set_vt(bool value);
         void set_vn(bool value);
+        bool get_vt();
+        bool get_vn();
+        double get_scroll();
         
         GLuint get_v_int() {
             return v_int;
@@ -58,7 +65,7 @@ class Draw {
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
         Faces       *faces;
-        GLuint      v_int, v_ind, vn_int, vt_int;
-        double      rl_rot, ud_rot, xPos, yPos;
+        GLuint      v_int, v_ind;
+        double      rl_rot, ud_rot, xPos, yPos, scroll;
         bool        vn_bool, vt_bool;
 };

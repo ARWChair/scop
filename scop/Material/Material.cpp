@@ -1,20 +1,19 @@
 #include "Material.hpp"
 #include "../Faces/Faces.hpp"
 
-Material::Material(std::string filename, Faces *&faces) {
+Material::Material(std::string filename, Faces *&faces, bool state) {
     if (filename.length() == 0) {
-        std::cout << "Missing" << std::endl;
+        missing = true;
+    } else if (state == true) {
         missing = true;
     } else {
         this->faces = faces;
         set_filename(filename);
         load_entities();
         if (missing == true) {
-            std::cout << "Missing" << std::endl;
             create_mtl_file();
             load_entities();
         }
-        std::cout << "Not missing" << std::endl;
         split();
         check_and_fill();
     }

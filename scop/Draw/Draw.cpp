@@ -5,7 +5,7 @@
 #include "../Material/Material.hpp"
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
-scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vn_bool(false), vt_bool(false)
+scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), scroll(0.5f), vn_bool(false), vt_bool(false)
 {}
 
 Draw& Draw::operator=(const Draw& copy) {
@@ -14,6 +14,11 @@ Draw& Draw::operator=(const Draw& copy) {
         this->scop_window = copy.scop_window;
         this->rl_rot = copy.rl_rot;
         this->ud_rot = copy.ud_rot;
+        this->xPos = copy.xPos;
+        this->yPos = copy.yPos;
+        this->scroll = copy.scroll;
+        this->vn_bool = copy.vn_bool;
+        this->vt_bool = copy.vt_bool;
     }
     return *this;
 }
@@ -227,12 +232,41 @@ void Draw::render_vbo(GLsizei indexCount, bool state)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void Draw::inc_yPos(double value) {
+    yPos += value;
+}
+
+void Draw::inc_xPos(double value) {
+    xPos += value;
+}
+
+void Draw::inc_scroll(double value) {
+    scroll -= value;
+}
+
+void Draw::dec_scroll(double value) {
+    scroll += value;
+}
+
+
 void Draw::set_vn(bool value) {
     vn_bool = value;
 }
 
 void Draw::set_vt(bool value) {
     vt_bool = value;
+}
+
+bool Draw::get_vt() {
+    return vt_bool;
+}
+
+bool Draw::get_vn() {
+    return vn_bool;
+}
+
+double Draw::get_scroll() {
+    return scroll;
 }
 
 void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
