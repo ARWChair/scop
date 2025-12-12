@@ -50,6 +50,10 @@ class Faces {
         const flat& get_flattened() const;
         const bool& is_missing() const;
         const int& get_amount() const;
+        const double& get_scale() const;
+        void calculate_scale(std::vector<GLfloat>&, int);
+        void inc_scale(double value);
+        void dec_scale(double value);
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
@@ -90,6 +94,7 @@ class Faces {
         std::vector<inner_elements> list;
         flat_indices indices;
         flat flattened;
+        double scale;
         bool missing;
         int amount;
 };

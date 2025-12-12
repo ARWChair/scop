@@ -4,6 +4,7 @@ Faces::Faces(std::string filename) {
     this->filename = filename;
     this->amount = 0;
     this->missing = false;
+    this->scale = 1;
 
     this->filename += ".obj";
     if (load_lanes_from_obj() == -1)
@@ -278,23 +279,80 @@ const std::string& Faces::get_material_from_file() const {
     return material_from_file;
 }
 
+const double& Faces::get_scale() const {
+    return scale;
+}
+
+void Faces::inc_scale(double value) {
+    scale += value;
+}
+
+void Faces::dec_scale(double value) {
+    scale -= value;
+}
+
+
+void Faces::calculate_scale(std::vector<GLfloat>& flattened, int id) {
+    if (flattened.empty())
+        return;
+    
+    double scale = 0;
+    double far_plus = -DBL_MAX;
+    double far_minus = DBL_MAX;
+    for (std::size_t i = id; i < flattened.size(); i += 3) {
+        double val = static_cast<double>(flattened[i]);
+        if (val > far_plus)
+            far_plus = val;
+        if (val < far_minus)
+            far_minus = val;
+    }
+    if (far_minus < 0)
+        far_minus *= -1;
+    scale = far_minus + far_plus;
+    scale = 1 - far_plus;
+    if (scale < 0)
+        scale *= -1;
+    while (scale > 1.0f) {
+        scale /= 10;
+    }
+    std::cout << scale << std::endl;
+    scale = 1 - scale;
+    if (scale == 0)
+        scale = 1;
+    if (this->scale > scale)
+        this->scale = scale;
+    // if (scale > 1.0f) {
+    //     while (scale > 1.0f)
+    //         scale /= 10;
+    // }
+    // int calc = 1;
+    // while (calc < scale) {
+    //     calc *= 10;
+    // }
+    // std::cout << calc << ", " << scale << std::endl;
+    // scale = calc - scale;
+    // scale /= 2;
+    // if (this->scale < scale)
+    //     this->scale = scale;
+    // std::cout << "Scale: " << scale << std::endl;
+    
+}
+
 void reallign_highest_point(std::vector<GLfloat> &vertices, int id, int stride) {
-    if (vertices.empty() || stride <= 0) return;
+    if (vertices.empty() || stride <= 0)
+        return;
     
     double highest = -DBL_MAX;
     double lowest = DBL_MAX;
     
-    // Finde höchsten und niedrigsten Wert
     for (size_t i = id; i < vertices.size(); i += stride) {
         double val = static_cast<double>(vertices[i]);
-        if (val > highest) highest = val;
-        if (val < lowest) lowest = val;
+        if (val > highest)
+            highest = val;
+        if (val < lowest)
+            lowest = val;
     }
-    
-    // Berechne Verschiebung (zur Mitte ausrichten)
     double diff = (highest + lowest) / 2.0;
-    
-    // Verschiebe alle Vertices
     for (size_t i = id; i < vertices.size(); i += stride) {
         vertices[i] -= static_cast<GLfloat>(diff);
     }
