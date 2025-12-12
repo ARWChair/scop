@@ -55,7 +55,6 @@ class Draw {
         void set_vn(bool value);
         bool get_vt();
         bool get_vn();
-        double get_scroll();
         
         GLuint get_v_int() {
             return v_int;
@@ -66,6 +65,6 @@ class Draw {
         Scop_openGL &scop_openGL;
         Faces       *faces;
         GLuint      v_int, v_ind;
-        double      rl_rot, ud_rot, xPos, yPos, scroll;
+        double      rl_rot, ud_rot, xPos, yPos;
         bool        vn_bool, vt_bool;
 };

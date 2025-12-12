@@ -5,7 +5,7 @@
 #include "../Material/Material.hpp"
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
-scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), scroll(0.5f), vn_bool(false), vt_bool(false)
+scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vn_bool(false), vt_bool(false)
 {}
 
 Draw& Draw::operator=(const Draw& copy) {
@@ -16,7 +16,6 @@ Draw& Draw::operator=(const Draw& copy) {
         this->ud_rot = copy.ud_rot;
         this->xPos = copy.xPos;
         this->yPos = copy.yPos;
-        this->scroll = copy.scroll;
         this->vn_bool = copy.vn_bool;
         this->vt_bool = copy.vt_bool;
     }
@@ -26,10 +25,6 @@ Draw& Draw::operator=(const Draw& copy) {
 Draw::~Draw() {
     glDeleteBuffers(1, &v_int);
     glDeleteBuffers(1, &v_ind);
-    // if (vn_bool == true)
-    //     glDeleteBuffers(1, &vn_int);
-    // if (vt_bool == true)
-    //     glDeleteBuffers(1, &vt_int);
 }
 
 void Draw::make_current(GLXDrawable drawable) {
@@ -240,15 +235,6 @@ void Draw::inc_xPos(double value) {
     xPos += value;
 }
 
-void Draw::inc_scroll(double value) {
-    scroll -= value;
-}
-
-void Draw::dec_scroll(double value) {
-    scroll += value;
-}
-
-
 void Draw::set_vn(bool value) {
     vn_bool = value;
 }
@@ -265,9 +251,14 @@ bool Draw::get_vn() {
     return vn_bool;
 }
 
-double Draw::get_scroll() {
-    return scroll;
+void Draw::inc_scroll(double value) {
+    faces->inc_scale(value);
 }
+
+void Draw::dec_scroll(double value) {
+    faces->dec_scale(value);
+}
+
 
 void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
     glDisable(GL_LIGHTING);

@@ -117,6 +117,10 @@ void Scop_window::hold_open() {
     reallign_highest_point(flattened.vertexes, 0);
     reallign_highest_point(flattened.vertexes, 1);
     reallign_highest_point(flattened.vertexes, 2);
+    faces->calculate_scale(flattened.vertexes, 0);
+    faces->calculate_scale(flattened.vertexes, 1);
+    faces->calculate_scale(flattened.vertexes, 2);
+    std::cout << faces->get_scale() << std::endl;
     std::vector<GLfloat> concatinated_vector = summarize_vectors(indices, flattened);
     std::string mat_name = "Material";
     std::vector<unsigned int> indice;
@@ -125,7 +129,6 @@ void Scop_window::hold_open() {
     for (unsigned int pos = 0; pos < indices.normals_indice.size(); pos++) {
         indice.push_back(pos);
     }
-    std::cout << concatinated_vector.size() << std::endl;
     drawer->create_vbo(concatinated_vector, indice);
 
     XEvent e;
@@ -183,8 +186,8 @@ void Scop_window::hold_open() {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
-        // Create Scale calc
-        glScalef(drawer->get_scroll(), drawer->get_scroll(), drawer->get_scroll());
+        double scale = faces->get_scale();
+        glScalef(scale, scale, scale);
         
         GLfloat light_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
         GLfloat light_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
