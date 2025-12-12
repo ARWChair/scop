@@ -51,7 +51,7 @@ class Faces {
         const bool& is_missing() const;
         const int& get_amount() const;
         const double& get_scale() const;
-        void calculate_scale(std::vector<GLfloat>&, int);
+        void calculate_scale(std::vector<GLfloat>&);
         void inc_scale(double value);
         void dec_scale(double value);
         // ---------- Exception ---------- \\'

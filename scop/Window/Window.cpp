@@ -117,9 +117,7 @@ void Scop_window::hold_open() {
     reallign_highest_point(flattened.vertexes, 0);
     reallign_highest_point(flattened.vertexes, 1);
     reallign_highest_point(flattened.vertexes, 2);
-    faces->calculate_scale(flattened.vertexes, 0);
-    faces->calculate_scale(flattened.vertexes, 1);
-    faces->calculate_scale(flattened.vertexes, 2);
+    faces->calculate_scale(flattened.vertexes);
     std::cout << faces->get_scale() << std::endl;
     std::vector<GLfloat> concatinated_vector = summarize_vectors(indices, flattened);
     std::string mat_name = "Material";
