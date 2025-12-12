@@ -292,50 +292,36 @@ void Faces::dec_scale(double value) {
 }
 
 
-void Faces::calculate_scale(std::vector<GLfloat>& flattened, int id) {
-    if (flattened.empty())
+void Faces::calculate_scale(std::vector<GLfloat>& flattened) {
+    if (flattened.empty() || flattened.size() < 3)
         return;
     
-    double scale = 0;
-    double far_plus = -DBL_MAX;
-    double far_minus = DBL_MAX;
-    for (std::size_t i = id; i < flattened.size(); i += 3) {
-        double val = static_cast<double>(flattened[i]);
-        if (val > far_plus)
-            far_plus = val;
-        if (val < far_minus)
-            far_minus = val;
+    double min_x = DBL_MAX, max_x = -DBL_MAX;
+    double min_y = DBL_MAX, max_y = -DBL_MAX;
+    double min_z = DBL_MAX, max_z = -DBL_MAX;
+    for (std::size_t i = 0; i < flattened.size(); i += 3) {
+        double x = static_cast<double>(flattened[i]);
+        double y = static_cast<double>(flattened[i+1]);
+        double z = static_cast<double>(flattened[i+2]);
+        
+        if (x < min_x) min_x = x;
+        if (x > max_x) max_x = x;
+        if (y < min_y) min_y = y;
+        if (y > max_y) max_y = y;
+        if (z < min_z) min_z = z;
+        if (z > max_z) max_z = z;
     }
-    if (far_minus < 0)
-        far_minus *= -1;
-    scale = far_minus + far_plus;
-    scale = 1 - far_plus;
-    if (scale < 0)
-        scale *= -1;
-    while (scale > 1.0f) {
-        scale /= 10;
-    }
-    std::cout << scale << std::endl;
-    scale = 1 - scale;
-    if (scale == 0)
-        scale = 1;
-    if (this->scale > scale)
-        this->scale = scale;
-    // if (scale > 1.0f) {
-    //     while (scale > 1.0f)
-    //         scale /= 10;
-    // }
-    // int calc = 1;
-    // while (calc < scale) {
-    //     calc *= 10;
-    // }
-    // std::cout << calc << ", " << scale << std::endl;
-    // scale = calc - scale;
-    // scale /= 2;
-    // if (this->scale < scale)
-    //     this->scale = scale;
-    // std::cout << "Scale: " << scale << std::endl;
     
+    double extent_x = max_x - min_x;
+    double extent_y = max_y - min_y;
+    double extent_z = max_z - min_z;
+    double max_extent = std::max(extent_x, std::max(extent_y, extent_z));
+    if (max_extent <= 0.0)
+        return;
+    
+    double target_size = 2.0;
+    double scale_factor = target_size / max_extent;
+    this->scale = scale_factor;
 }
 
 void reallign_highest_point(std::vector<GLfloat> &vertices, int id, int stride) {
