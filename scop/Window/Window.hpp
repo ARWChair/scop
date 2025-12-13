@@ -28,7 +28,7 @@ class Scop_window {
 
         void create_window();
         void hold_open();
-        Display const *get_display() const;
+        Display *get_display();
         Window const &get_window() const;
         void set_drawer(Draw*& drawer);
         void set_faces(Faces*& faces);

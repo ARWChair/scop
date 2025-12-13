@@ -18,34 +18,10 @@ bool BMP::check_file() {
 
     if (!file.good()) {
         missing = true;
-        return true;    
+        return true; 
     }
     file.close();
     return false;
-}
-
-#include <vector>
-#include <iomanip>
-void hexDump(const std::vector<char>& data, size_t bytesToShow = 128) {
-    size_t limit = std::min(data.size(), bytesToShow);
-    
-    for (size_t i = 0; i < limit; ++i) {
-        // Hex-Anzeige
-        std::cout << std::hex << std::setw(2) << std::setfill('0') 
-                  << (static_cast<unsigned int>(data[i]) & 0xFF) << " ";
-        
-        // Alle 16 Bytes neue Zeile
-        if ((i + 1) % 16 == 0) {
-            std::cout << " | ";
-            // ASCII-Anzeige
-            for (size_t j = i - 15; j <= i; ++j) {
-                unsigned char c = static_cast<unsigned char>(data[j]);
-                std::cout << (c >= 32 && c < 127 ? c : '.');
-            }
-            std::cout << std::endl;
-        }
-    }
-    std::cout << std::dec << std::endl;
 }
 
 bool BMP::load_content() {
@@ -59,7 +35,7 @@ bool BMP::load_content() {
     file.read(buffer.data(), size);
     file.close();
 
-    if (buffer[0] != 'B' || buffer[1] != 'M') {
+    if (buffer.size() == 0 || (buffer[0] != 'B' || buffer[1] != 'M')) {
         missing = true;
         return false;
     }

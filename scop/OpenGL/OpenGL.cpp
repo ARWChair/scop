@@ -16,7 +16,8 @@ Scop_openGL::Scop_openGL(const Scop_window *window, const Display *display, int 
     this->fbconfig = NULL;
     choose_display_fb_exception();
     create_glx_context();
-    make_current(window->get_window());
+    GLXDrawable drawable = window->get_window();
+    make_current(drawable);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
@@ -110,7 +111,7 @@ void Scop_openGL::create_viewport() {
     
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        std::cout << "OpenGL Error after viewport: " << error << std::endl;
+        std::cerr << "OpenGL Error after viewport: " << error << std::endl;
     }
 }
 
@@ -138,7 +139,7 @@ void Scop_openGL::make_current(GLXDrawable drawable) {
 }
 
 
-GLXDrawable const &Scop_openGL::get_drawable() const {
+GLXDrawable Scop_openGL::get_drawable() {
     return drawable;
 }
 

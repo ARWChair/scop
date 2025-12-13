@@ -5,18 +5,19 @@
 #include "../BMP/BMP.hpp"
 
 Scop_window::Scop_window() {
+    toggle = false;
     main_display = XOpenDisplay(0);
     root_window = XDefaultRootWindow(main_display);
     x = y = width = height = border_width = ui_class = depth = valuemask = 0;
     visual = CopyFromParent;
     attributes = {};
-    toggle = false;
     created_window = false;
 }
 
 Scop_window::Scop_window(int x, int y, unsigned int width, unsigned int height, unsigned int border_width,
     int depth, unsigned int ui_class, Visual *visual, unsigned int valuemask, XSetWindowAttributes attributes) {
     
+    toggle = false;
     main_display = XOpenDisplay(0);
     root_window = XDefaultRootWindow(main_display);
     created_window = false;
@@ -35,7 +36,6 @@ Scop_window::Scop_window(int x, int y, unsigned int width, unsigned int height, 
     if (this->attributes.background_pixel == 0)
         this->attributes.background_pixel = 0xffafe9af;
     create_window();
-    toggle = false;
     created_window = true;
 }
 
@@ -111,14 +111,16 @@ std::vector<GLfloat> Scop_window::summarize_vectors(flat_indices& flattened, fla
 
 void Scop_window::hold_open() {
     flat_indices indices = faces->get_indices();
-    flat flattened = faces->get_flattened();
+    flat flattened;
+    flattened.vertexes = faces->get_flattened().vertexes;
+    flattened.normals = faces->get_flattened().normals;
+    flattened.textures = faces->get_flattened().textures;
     reallign_highest_point(flattened.vertexes, 0);
     reallign_highest_point(flattened.vertexes, 1);
     reallign_highest_point(flattened.vertexes, 2);
     faces->calculate_scale(flattened.vertexes);
     std::vector<GLfloat> concatinated_vector = summarize_vectors(indices, flattened);
     std::string mat_name = faces->get_material_from_file();
-    // std::cout << material->get_map_Kd(mat_name) << std::endl;
     std::vector<unsigned int> indice;
     bool lock = true;
 
@@ -205,7 +207,7 @@ void Scop_window::hold_open() {
         apply_material(mat_name);
         drawer->render_vbo(indice_size, toggle);
 
-        glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
+        glXSwapBuffers(get_display(), scop_openGL->get_drawable());
         glFlush();
         if (lock)
             drawer->inc_rl_rotation(0.005f);
@@ -266,7 +268,7 @@ void Scop_window::set_bmp(BMP *&bmp) {
     this->bmp = bmp;
 }
 
-Display const *Scop_window::get_display() const {
+Display *Scop_window::get_display() {
     return main_display;
 }
 

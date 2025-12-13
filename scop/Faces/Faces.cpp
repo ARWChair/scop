@@ -219,11 +219,11 @@ void Faces::save_material_file_name() {
         missing = true;
 }
 
-const bool& Faces::is_missing() const {
+bool Faces::is_missing() {
     return missing;
 }
 
-const flat& Faces::get_flattened() const {
+flat Faces::get_flattened() {
     return flattened;
 }
 
@@ -257,19 +257,19 @@ std::vector<std::string> split(std::string &str, char c) {
     return returned;
 }
 
-const flat_indices& Faces::get_indices() const {
+flat_indices Faces::get_indices() {
     return indices;
 }
 
-const std::string& Faces::get_material_file_name() const {
+std::string Faces::get_material_file_name() {
     return material_file_name;
 }
 
-const std::string& Faces::get_material_from_file() const {
+std::string Faces::get_material_from_file() {
     return material_from_file;
 }
 
-const double& Faces::get_scale() const {
+double Faces::get_scale() {
     return scale;
 }
 

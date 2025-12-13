@@ -41,13 +41,13 @@ class Faces {
         ~Faces();
 
         std::vector<std::vector<std::string>> get_faces_indexes();
-        const std::string& get_material_file_name() const;
-        const std::string& get_material_from_file() const;
-        const flat_indices& get_indices() const;
+        std::string get_material_file_name();
+        std::string get_material_from_file();
+        flat_indices get_indices();
         std::vector<inner_elements> triangulate(std::vector<std::vector<std::string>>&);
-        const flat& get_flattened() const;
-        const bool& is_missing() const;
-        const double& get_scale() const;
+        flat get_flattened();
+        bool is_missing();
+        double get_scale();
         void calculate_scale(std::vector<GLfloat>&);
         void inc_scale(double);
         void dec_scale(double);

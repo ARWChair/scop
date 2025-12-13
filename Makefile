@@ -22,7 +22,7 @@ $(NAME): $(OBJS) $(OBJSGLEW)
 	$(CXX) -no-pie $(OBJS) $(OBJSGLEW) $(LDFLAGS) -o $(NAME)
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) $(OBJSGLEW)
 
 fclean: clean
 	$(RM) $(NAME)

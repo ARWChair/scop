@@ -24,7 +24,7 @@ class Scop_openGL {
         void create_viewport();
         void create_lighting();
 
-        GLXDrawable const &get_drawable() const;
+        GLXDrawable get_drawable();
         Scop_window const *get_window() const;
         // ---------- Exceptions ---------- \\'
         class GLXBSetupException: public std::exception {

@@ -23,7 +23,6 @@ class Draw {
         void make_current(GLXDrawable);
         void make_current();
         void clear();
-        void draw_texture(Material*&);
         void create_vbo(std::vector<GLfloat>&, std::vector<unsigned int>&);
         void render_vbo(GLsizei, bool);
         void draw_individual_text(std::array<double, 3UL>, int16_t);

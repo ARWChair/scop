@@ -175,45 +175,6 @@ void Draw::draw_individual_text(std::array<double, 3UL> type, int16_t type_name)
     }
 }
 
-void Draw::draw_texture(Material *&material) {
-    // std::cout << material << std::endl;
-    // if (material->get_map_Kd().size() == 0)
-    //     glDisable(GL_TEXTURE_2D);
-    // // else {
-        
-    // //     glEnable();
-    // // }
-
-    std::string name = faces->get_material_from_file();
-    draw_individual_text(material->get_Ka(name), GL_AMBIENT);
-    draw_individual_text(material->get_Kd(name), GL_DIFFUSE);
-    draw_individual_text(material->get_Ks(name), GL_SPECULAR);
-    draw_individual_text(material->get_Ke(name), GL_EMISSION);
-    if (material->get_Ns(name).size() != 0) {
-        GLfloat blender_ns = static_cast<GLfloat>(material->get_Ns(name)[0]);
-        GLfloat opengl_ns;
-        opengl_ns = blender_ns * (128.0f / 1000.0f);
-        if (blender_ns > 1000.0f)
-            opengl_ns = 128.0f;
-        if (blender_ns < 200.0f)
-            opengl_ns = blender_ns * 0.3f;
-        else if (blender_ns < 600.0f)
-            opengl_ns = blender_ns * 0.2f;
-        else
-            opengl_ns = blender_ns * 0.128f;
-        glMaterialf(GL_FRONT, GL_SHININESS, opengl_ns);
-    }
-    
-    // if (!material->get_d().empty()) {
-    //     glEnable(GL_BLEND);
-    //     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //     glColor4f(1.0f, 1.0f, 1.0f, material->get_d()[0]);
-    // } else {
-    //     glColor3f(1.0f, 1.0f, 1.0f);
-    //     glDisable(GL_BLEND);
-    // }
-}
-
 void Draw::inc_rl_rotation(double delta) {
     rl_rot += delta;
     rl_rot = std::round(rl_rot * 10000.0) / 10000.0;
