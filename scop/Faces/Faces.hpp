@@ -37,23 +37,20 @@ typedef struct flat_indices {
 
 class Faces {
     public:
-        Faces(std::string filename);
+        Faces(std::string);
         ~Faces();
 
         std::vector<std::vector<std::string>> get_faces_indexes();
-        const std::vector<std::string>& get_lines() const;
         const std::string& get_material_file_name() const;
         const std::string& get_material_from_file() const;
-        const std::vector<inner_elements>& get_list() const;
         const flat_indices& get_indices() const;
         std::vector<inner_elements> triangulate(std::vector<std::vector<std::string>>&);
         const flat& get_flattened() const;
         const bool& is_missing() const;
-        const int& get_amount() const;
         const double& get_scale() const;
         void calculate_scale(std::vector<GLfloat>&);
-        void inc_scale(double value);
-        void dec_scale(double value);
+        void inc_scale(double);
+        void dec_scale(double);
         // ---------- Exception ---------- \\'
         class LoadException: public std::exception {
             public:
@@ -99,13 +96,4 @@ class Faces {
         int amount;
 };
 
-// Read whole file
-// Get line by line
-// Save in faces and v
-// Display first triangle
-// try do draw it in 3d space
-
-std::vector<unsigned int> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces, std::vector<std::vector<unsigned int>> indices);
-std::vector<std::vector<std::array<double, 3>>> split_and_group(std::vector<std::vector<std::array<double, 3>>> &faces);
-std::vector<std::vector<std::array<double, 2>>> split_and_group(std::vector<std::vector<std::array<double, 2>>> &faces);
 void reallign_highest_point(std::vector<GLfloat> &faces, int id, int stride = 3);

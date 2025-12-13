@@ -14,17 +14,15 @@
 class Scop_openGL {
     public:
         Scop_openGL();
-        Scop_openGL(const Scop_window *window, const Display *display, int screen);
-        Scop_openGL& operator=(const Scop_openGL& copy);
+        Scop_openGL(const Scop_window*, const Display*, int);
+        Scop_openGL& operator=(const Scop_openGL&);
         ~Scop_openGL();
 
         void choose_display_fb_exception();
         void create_glx_context();
-        void make_current(GLXDrawable drawable);
+        void make_current(GLXDrawable);
         void create_viewport();
         void create_lighting();
-        void set_display(Display *display);
-        void draw_plane(float rotation);
 
         GLXDrawable const &get_drawable() const;
         Scop_window const *get_window() const;

@@ -26,27 +26,25 @@ class Faces;
 
 class Material {
 public:
-    Material(std::string filename, Faces *&faces, bool state);
+    Material(std::string, Faces*&, bool);
     ~Material();
 
     void load_entities();
     void split();
-    void set_filename(std::string &filename);
-    const std::string &get_filename() const;
-    const std::vector<std::string> &get_lines() const;
-    const std::array<double, 3> &get_Kd(std::string &name) const;
-    const std::array<double, 3> &get_Ka(std::string &name) const;
-    const std::array<double, 3> &get_Ks(std::string &name) const;
-    const std::array<double, 3> &get_Ke(std::string &name) const;
-    const std::array<double, 3> &get_Tf(std::string &name) const;
-    const std::array<double, 1> &get_Ns(std::string &name) const;
-    const std::array<double, 1> &get_Ni(std::string &name) const;
-    const std::array<double, 1> &get_d(std::string &name) const;
-    const std::array<double, 1> &get_Tr(std::string &name) const;
-    const std::array<double, 1> &get_sharpness(std::string &name) const;
-    const std::array<int, 1> &get_illum(std::string &name) const;
-    const std::string &get_map_Kd(std::string &name) const;
-    const bool &is_missing() const;
+    void set_filename(std::string);
+    std::array<double, 3> get_Kd(std::string);
+    std::array<double, 3> get_Ka(std::string);
+    std::array<double, 3> get_Ks(std::string);
+    std::array<double, 3> get_Ke(std::string);
+    std::array<double, 3> get_Tf(std::string);
+    std::array<double, 1> get_Ns(std::string);
+    std::array<double, 1> get_Ni(std::string);
+    std::array<double, 1> get_d(std::string);
+    std::array<double, 1> get_Tr(std::string);
+    std::array<double, 1> get_sharpness(std::string);
+    std::array<int, 1> get_illum(std::string);
+    std::string get_map_Kd(std::string);
+    bool is_missing();
 private:
     void create_mtl_file();
     void check_and_fill();

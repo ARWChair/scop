@@ -12,6 +12,7 @@ Faces::Faces(std::string filename) {
     v_vn_vt* elements = split_parts();
     if (!elements)
         throw SplitException();
+    material_from_file = "";
     std::vector<std::vector<std::string>> face_indexes = get_faces_indexes();
     std::vector<inner_elements> elems = triangulate(face_indexes);
     flattened = flatten_faces(elements);
@@ -26,6 +27,7 @@ Faces::Faces(std::string filename) {
             indices.normals_indice.push_back(*inner);
         }
     }
+    delete elements;
     save_material_file_name();
 }
 
@@ -255,18 +257,6 @@ std::vector<std::string> split(std::string &str, char c) {
     return returned;
 }
 
-const std::vector<std::string>& Faces::get_lines() const {
-    return lines;
-}
-
-const std::vector<inner_elements>& Faces::get_list() const {
-    return list;
-}
-
-const int& Faces::get_amount() const {
-    return amount;
-}
-
 const flat_indices& Faces::get_indices() const {
     return indices;
 }
@@ -304,12 +294,18 @@ void Faces::calculate_scale(std::vector<GLfloat>& flattened) {
         double y = static_cast<double>(flattened[i+1]);
         double z = static_cast<double>(flattened[i+2]);
         
-        if (x < min_x) min_x = x;
-        if (x > max_x) max_x = x;
-        if (y < min_y) min_y = y;
-        if (y > max_y) max_y = y;
-        if (z < min_z) min_z = z;
-        if (z > max_z) max_z = z;
+        if (x < min_x)
+            min_x = x;
+        if (x > max_x)
+            max_x = x;
+        if (y < min_y)
+            min_y = y;
+        if (y > max_y)
+            max_y = y;
+        if (z < min_z)
+            min_z = z;
+        if (z > max_z)
+            max_z = z;
     }
     
     double extent_x = max_x - min_x;

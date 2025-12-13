@@ -16,55 +16,41 @@ class Faces;
 
 class Draw {
     public:
-        Draw(Scop_openGL &scop_openGL, Scop_window &scop_window);
-        Draw& operator=(const Draw& copy);
+        Draw(Scop_openGL&, Scop_window&);
+        Draw& operator=(const Draw&);
         ~Draw();
 
-        void make_current(GLXDrawable drawable);
+        void make_current(GLXDrawable);
         void make_current();
         void clear();
-        void set_color(float r, float g, float b);
-        void draw_triangle(std::vector<std::array<double, 3>>, std::array<double, 3> vn, std::vector<std::array<double, 2>> vt, Material *&material, bool toggle);
-        void draw_triangle(std::vector<std::array<double, 3>>, std::array<double, 3> vn, Material *&material, bool toggle);
-        void draw_triangle(std::vector<std::array<double, 3>>, std::vector<std::array<double, 2>> vt, Material *&material, bool toggle);
-        void draw_triangle(std::vector<std::array<double, 3>> v, Material *&material, bool toggle);
-        void draw_triangle(std::vector<GLfloat>& f);
-        void setup_face_colors(std::vector<GLfloat>& verts);
-        void draw_texture(Material *&material);
+        void draw_texture(Material*&);
         void create_vbo(std::vector<GLfloat>&, std::vector<unsigned int>&);
-        void render_vbo(GLsizei verts, bool state);
-        void draw_individual_text(std::array<double, 3UL> type, int16_t type_name);
-        void split_elements(std::vector<inner_elements>&);
+        void render_vbo(GLsizei, bool);
+        void draw_individual_text(std::array<double, 3UL>, int16_t);
+        void create_texture(std::vector<unsigned char>, int, GLsizei, GLsizei);
 
         double const &get_ud_rotation() const;
         double const &get_rl_rotation() const;
         double const &get_xPos() const;
         double const &get_yPos() const;
-        void inc_ud_rotation(double delta);
-        void dec_ud_rotation(double delta);
-        void inc_rl_rotation(double delta);
-        void dec_rl_rotation(double delta);
-        void inc_yPos(double value);
-        void inc_xPos(double value);
-        void set_faces(Faces*& faces);
-        void set_xPos(double x);
-        void set_yPos(double y);
-        void inc_scroll(double value);
-        void dec_scroll(double value);
-        void set_vt(bool value);
-        void set_vn(bool value);
+        void inc_ud_rotation(double);
+        void dec_ud_rotation(double);
+        void inc_rl_rotation(double);
+        void dec_rl_rotation(double);
+        void inc_yPos(double);
+        void inc_xPos(double);
+        void set_faces(Faces*&);
+        void inc_scroll(double);
+        void dec_scroll(double);
+        void set_vt(bool);
         bool get_vt();
-        bool get_vn();
         
-        GLuint get_v_int() {
-            return v_int;
-        }
     protected:
     private:
         Scop_window &scop_window;
         Scop_openGL &scop_openGL;
         Faces       *faces;
-        GLuint      v_int, v_ind;
+        GLuint      v_int, v_ind, v_text;
         double      rl_rot, ud_rot, xPos, yPos;
-        bool        vn_bool, vt_bool;
+        bool        vt_bool, text_bool;
 };

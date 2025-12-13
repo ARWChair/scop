@@ -15,6 +15,7 @@ class Draw;
 class Faces;
 class Scop_openGL;
 class Material;
+class BMP;
 
 class Scop_window {
     public:
@@ -22,18 +23,18 @@ class Scop_window {
         Scop_window(int x, int y, unsigned int width, unsigned int height, unsigned int border_width = 0,
                     int depth = 0, unsigned int ui_class = 0, Visual *visual = CopyFromParent,
                     unsigned int valuemask = 0, XSetWindowAttributes attributes = {});
-        Scop_window& operator=(const Scop_window& copy);
+        Scop_window& operator=(const Scop_window&);
         ~Scop_window();
 
         void create_window();
         void hold_open();
-        void setup_face_colors(int face);
         Display const *get_display() const;
         Window const &get_window() const;
         void set_drawer(Draw*& drawer);
         void set_faces(Faces*& faces);
-        void set_openGL(Scop_openGL*& scop_openGL);
-        void set_material(Material*& material);
+        void set_openGL(Scop_openGL*&);
+        void set_material(Material*&);
+        void set_bmp(BMP *&bmp);
         
         const unsigned int &get_width() const;
         const unsigned int &get_height() const;
@@ -46,10 +47,8 @@ class Scop_window {
         };
     protected:
     private:
-        void apply_material(std::string& material_name);
-        std::vector<GLfloat> summarize_vectors(flat_indices& flattened, flat &values);
-        std::vector<GLfloat> create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>&);
-        std::vector<GLfloat> create_GLfloat_array(std::vector<std::vector<std::array<double, 2>>>&);
+        void apply_material(std::string&);
+        std::vector<GLfloat> summarize_vectors(flat_indices&, flat&);
 
         Display* main_display;
         Window root_window, main_window;
@@ -63,5 +62,6 @@ class Scop_window {
         Material *material;
         Faces* faces;
         Draw* drawer;
+        BMP *bmp;
         bool toggle;
 };

@@ -3,6 +3,7 @@
 #include "./scop/OpenGL/OpenGL.hpp"
 #include "./scop/Faces/Faces.hpp"
 #include "./scop/Material/Material.hpp"
+#include "./scop/BMP/BMP.hpp"
 
 int main(int argc, char **argv) {
     Scop_window *window = nullptr;
@@ -10,9 +11,10 @@ int main(int argc, char **argv) {
     Draw *draw = nullptr;
     Faces *faces = nullptr;
     Material *material = nullptr;
+    BMP *bmp = nullptr;
 
     if (argc != 2) {
-        std::cout << "Input filename to start" << std::endl;
+        std::cerr << "Input filename to start" << std::endl;
         return 1;
     }
     try {
@@ -41,7 +43,7 @@ int main(int argc, char **argv) {
         std::string arg = argv[1];
         size_t pos = arg.find_last_of('/');
         arg.erase(pos + 1, arg.length());
-        std::string material_name = ((std::string)faces->get_material_file_name());
+        std::string material_name = faces->get_material_file_name();
         bool state = faces->is_missing();
         if (material_name.length() == 0)
             material = new Material("", faces, state);
@@ -51,6 +53,16 @@ int main(int argc, char **argv) {
             std::cerr << "Error. Material allocation failed" << std::endl;
             goto delete_all_error;
         }
+        std::string name = faces->get_material_from_file();
+        if (name.length() != 0) {
+            name = material->get_map_Kd(name);
+            bmp = new BMP(arg, name);
+            if (bmp == nullptr) {
+                std::cerr << "Error. BMP allocation failed" << std::endl;
+                goto delete_all_error;
+            }
+            window->set_bmp(bmp);
+        }
         window->set_openGL(opengl);
         window->set_drawer(draw);
         window->set_faces(faces);
@@ -58,9 +70,10 @@ int main(int argc, char **argv) {
         opengl->make_current((GLXDrawable)window->get_window());
         window->hold_open();
     } catch (const std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         goto delete_all_error;
     }
+    delete bmp;
     delete material;
     delete faces;
     delete draw;
@@ -69,6 +82,8 @@ int main(int argc, char **argv) {
     return 0;
 
     delete_all_error:
+        if (bmp != nullptr)
+            delete bmp;
         if (material != nullptr)
             delete material;
         if (faces != nullptr)

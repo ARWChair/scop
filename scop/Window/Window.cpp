@@ -2,6 +2,7 @@
 #include "../Draw/Draw.hpp"
 #include "../Faces/Faces.hpp"
 #include "../Material/Material.hpp"
+#include "../BMP/BMP.hpp"
 
 Scop_window::Scop_window() {
     main_display = XOpenDisplay(0);
@@ -70,23 +71,20 @@ void Scop_window::create_window() {
 }
 
 std::vector<GLfloat> Scop_window::summarize_vectors(flat_indices& flattened, flat &values) {
+    std::vector<unsigned int>::iterator v_it = flattened.vertexes_indice.begin();
+    std::vector<unsigned int>::iterator vt_it = flattened.textures_indice.begin();
+    std::vector<unsigned int>::iterator vn_it = flattened.normals_indice.begin();
     std::vector<GLfloat> summarized;
     std::size_t current = 0;
     bool vt, vn;
     vt = vn = false;
     float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
 
-    std::vector<unsigned int>::iterator v_it = flattened.vertexes_indice.begin();
-    std::vector<unsigned int>::iterator vt_it = flattened.textures_indice.begin();
-    std::vector<unsigned int>::iterator vn_it = flattened.normals_indice.begin();
     if (vt_it != flattened.textures_indice.end()) {
         vt = true;
         drawer->set_vt(true);
     }
-    if (vn_it != flattened.normals_indice.end()) {
-        vn = true;
-        drawer->set_vn(true);
-    }
+    float gray;
     for (; v_it != flattened.vertexes_indice.end(); v_it++) {
         summarized.push_back(values.vertexes[(*v_it) * 3]);
         summarized.push_back(values.vertexes[((*v_it) * 3) + 1]);
@@ -100,7 +98,7 @@ std::vector<GLfloat> Scop_window::summarize_vectors(flat_indices& flattened, fla
         summarized.push_back(values.normals[((*vn_it) * 3) + 1]);
         summarized.push_back(values.normals[((*vn_it) * 3) + 2]);
         vn_it++;
-        float gray = grayValues[current % 6];
+        gray = grayValues[current % 6];
         GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
         summarized.push_back(faceColor[0]);
         summarized.push_back(faceColor[1]);
@@ -118,15 +116,17 @@ void Scop_window::hold_open() {
     reallign_highest_point(flattened.vertexes, 1);
     reallign_highest_point(flattened.vertexes, 2);
     faces->calculate_scale(flattened.vertexes);
-    std::cout << faces->get_scale() << std::endl;
     std::vector<GLfloat> concatinated_vector = summarize_vectors(indices, flattened);
-    std::string mat_name = "Material";
+    std::string mat_name = faces->get_material_from_file();
+    // std::cout << material->get_map_Kd(mat_name) << std::endl;
     std::vector<unsigned int> indice;
     bool lock = true;
 
     for (unsigned int pos = 0; pos < indices.normals_indice.size(); pos++) {
         indice.push_back(pos);
     }
+    if (bmp->is_missing() == false)
+        drawer->create_texture(bmp->get_pixels(), bmp->get_bits_per_pixel(), bmp->get_width(), bmp->get_height());
     drawer->create_vbo(concatinated_vector, indice);
 
     XEvent e;
@@ -203,34 +203,13 @@ void Scop_window::hold_open() {
 
 
         apply_material(mat_name);
-        // if (drawer->has_texture()) {
-        //     glEnable(GL_TEXTURE_2D);
-        //     glBindTexture(GL_TEXTURE_2D, drawer->get_texture_id);
-        // }
-
         drawer->render_vbo(indice_size, toggle);
-        // if (drawer->has_texture())
-        //     glDisable(GL_TEXTURE_2D);
 
         glXSwapBuffers((Display *)get_display(), scop_openGL->get_drawable());
         glFlush();
         if (lock)
             drawer->inc_rl_rotation(0.005f);
     }
-}
-
-void Scop_window::setup_face_colors(int face) {
-    float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
-    float gray = grayValues[face % 6];
-    
-    static const GLfloat params[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
-    glMaterialfv(GL_FRONT, GL_AMBIENT, faceColor);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, faceColor);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, params);
-    glMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
-    glMaterialfv(GL_FRONT, GL_EMISSION, params);
-    glColor3f(gray, gray, gray);
 }
 
 void Scop_window::apply_material(std::string& material_name) {
@@ -279,33 +258,12 @@ void Scop_window::apply_material(std::string& material_name) {
     }
 }
 
-std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 3>>>& v) {
-    std::vector<GLfloat> va_v;
-    
-    for (std::vector<std::vector<std::array<double, 3>>>::iterator verts_it = v.begin(); verts_it != v.end(); verts_it++) {
-        for (std::vector<std::array<double, 3>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
-            va_v.push_back(static_cast<GLfloat>((*pos_it)[0]));
-            va_v.push_back(static_cast<GLfloat>((*pos_it)[1]));
-            va_v.push_back(static_cast<GLfloat>((*pos_it)[2]));
-        }
-    }
-    return va_v;
-}
-
-std::vector<GLfloat> Scop_window::create_GLfloat_array(std::vector<std::vector<std::array<double, 2>>>& v) {
-    std::vector<GLfloat> va_v;
-    
-    for (std::vector<std::vector<std::array<double, 2>>>::iterator verts_it = v.begin(); verts_it != v.end(); verts_it++) {
-        for (std::vector<std::array<double, 2>>::iterator pos_it = verts_it->begin(); pos_it != verts_it->end(); pos_it++) {
-            va_v.push_back(static_cast<GLfloat>((*pos_it)[0]));
-            va_v.push_back(static_cast<GLfloat>((*pos_it)[1]));
-        }
-    }
-    return va_v;
-}
-
 void Scop_window::set_openGL(Scop_openGL*& scop_openGL) {
     this->scop_openGL = scop_openGL;
+}
+
+void Scop_window::set_bmp(BMP *&bmp) {
+    this->bmp = bmp;
 }
 
 Display const *Scop_window::get_display() const {

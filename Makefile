@@ -1,6 +1,7 @@
 SRCS = main.cpp \
        ./scop/OpenGL/OpenGL.cpp \
        ./scop/Window/Window.cpp \
+       ./scop/BMP/BMP.cpp \
        ./scop/Draw/Draw.cpp \
        ./scop/Faces/Faces.cpp \
        ./scop/Material/Material.cpp \

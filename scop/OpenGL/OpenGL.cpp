@@ -137,9 +137,6 @@ void Scop_openGL::make_current(GLXDrawable drawable) {
         throw MakeCurrentNullException();
 }
 
-void Scop_openGL::set_display(Display *display) {
-    this->display = display;
-}
 
 GLXDrawable const &Scop_openGL::get_drawable() const {
     return drawable;

@@ -5,7 +5,7 @@
 #include "../Material/Material.hpp"
 
 Draw::Draw(Scop_openGL &scop_openGL, Scop_window &scop_window):
-scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vn_bool(false), vt_bool(false)
+scop_window(scop_window), scop_openGL(scop_openGL), rl_rot(0.0f), ud_rot(0.0f), xPos(0.0f), yPos(0.0f), vt_bool(false), text_bool(false)
 {}
 
 Draw& Draw::operator=(const Draw& copy) {
@@ -16,8 +16,8 @@ Draw& Draw::operator=(const Draw& copy) {
         this->ud_rot = copy.ud_rot;
         this->xPos = copy.xPos;
         this->yPos = copy.yPos;
-        this->vn_bool = copy.vn_bool;
         this->vt_bool = copy.vt_bool;
+        this->text_bool = copy.text_bool;
     }
     return *this;
 }
@@ -25,6 +25,8 @@ Draw& Draw::operator=(const Draw& copy) {
 Draw::~Draw() {
     glDeleteBuffers(1, &v_int);
     glDeleteBuffers(1, &v_ind);
+    if (text_bool == true)
+        glDeleteBuffers(1, &v_text);
 }
 
 void Draw::make_current(GLXDrawable drawable) {
@@ -39,122 +41,28 @@ void Draw::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Draw::set_color(float r, float g, float b) {
-    glColor3f(r, g, b);
-}
-
-void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::array<double, 3> vn, std::vector<std::array<double, 2>> vt, Material *&material, bool toggle) {
-    std::vector<std::array<double, 3>>::iterator it = v.begin();
-    std::vector<std::array<double, 2>>::iterator it_2 = vt.begin();
+void Draw::create_texture(std::vector<unsigned char> pixels, int bits_per_pixels, GLsizei width, GLsizei height) {
+    glGenTextures(1, &v_text);
+    glBindTexture(GL_TEXTURE_2D, v_text);
     
-    if (material->is_missing() == false && toggle == true)
-        draw_texture(material);
-    glNormal3f(vn[0], vn[1], vn[2]);
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    it_2++;
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    it_2++;
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-}
-
-void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::vector<std::array<double, 2>> vt, Material *&material, bool toggle) {
-    std::vector<std::array<double, 3>>::iterator it = v.begin();
-    std::vector<std::array<double, 2>>::iterator it_2 = vt.begin();
-
-    if (material->is_missing() == false && toggle == true)
-        draw_texture(material);
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    it_2++;
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    it_2++;
-    glTexCoord2f((*it_2)[0], (*it_2)[1]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-}
-
-void Draw::draw_triangle(std::vector<std::array<double, 3>> v, std::array<double, 3> vn, Material *&material, bool toggle) {
-    std::vector<std::array<double, 3>>::iterator it = v.begin();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    if (material->is_missing() == false && toggle == true)
-        draw_texture(material);
-    glNormal3f(vn[0], vn[1], vn[2]);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-}
-
-void Draw::draw_triangle(std::vector<std::array<double, 3>> v, Material *&material, bool toggle) {
-    std::vector<std::array<double, 3>>::iterator it = v.begin();
-
-    if (material->is_missing() == false && toggle == true)
-        draw_texture(material);
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-    it++;
-    glVertex3f((*it)[0], (*it)[1], (*it)[2]);
-}
-
-void Draw::split_elements(std::vector<inner_elements>& node) {
-    std::vector<inner_elements> temp;
-
-    for (std::vector<inner_elements>::iterator it = node.begin(); it != node.end(); it++) {
-        if (it->v.size() == 3) {
-            temp.push_back(*it);
-        } else if (it->v.size() == 4) {
-            inner_elements temp_inner;
-
-            temp_inner.v.push_back(it->v[0]);
-            temp_inner.v.push_back(it->v[1]);
-            temp_inner.v.push_back(it->v[2]);
-            temp_inner.vt.push_back(it->vt[0]);
-            temp_inner.vt.push_back(it->vt[1]);
-            temp_inner.vt.push_back(it->vt[2]);
-            temp_inner.vn.push_back(it->vn[0]);
-            temp_inner.vn.push_back(it->vn[1]);
-            temp_inner.vn.push_back(it->vn[2]);
-            temp.push_back(temp_inner);
-            temp_inner.v.clear();
-            temp_inner.vt.clear();
-            temp_inner.vn.clear();
-            temp_inner.v.push_back(it->v[0]);
-            temp_inner.v.push_back(it->v[2]);
-            temp_inner.v.push_back(it->v[3]);
-            temp_inner.vt.push_back(it->vt[0]);
-            temp_inner.vt.push_back(it->vt[2]);
-            temp_inner.vt.push_back(it->vt[3]);
-            temp_inner.vn.push_back(it->vn[0]);
-            temp_inner.vn.push_back(it->vn[2]);
-            temp_inner.vn.push_back(it->vn[3]);
-            temp.push_back(temp_inner);
-        } else {            
-            for (unsigned long i = 1; i < it->v.size() - 1; i++) {
-                inner_elements temp_inner;
-
-                temp_inner.v.push_back(it->v[0]);
-                temp_inner.v.push_back(it->v[i]);
-                temp_inner.v.push_back(it->v[i + 1]);
-                temp_inner.vt.push_back(it->vt[0]);
-                temp_inner.vt.push_back(it->vt[i]);
-                temp_inner.vt.push_back(it->vt[i + 1]);
-                temp_inner.vn.push_back(it->vn[0]);
-                temp_inner.vn.push_back(it->vn[i]);
-                temp_inner.vn.push_back(it->vn[i + 1]);
-                temp.push_back(temp_inner);
-            }
-        }
+    GLenum format = GL_RGB;
+    if (bits_per_pixels == 32)
+        format = GL_RGBA;
+    else if (bits_per_pixels == 24)
+        format = GL_RGB;
+    else {
+        std::cerr << "Unsupported BPP: " << bits_per_pixels << std::endl;
+        glDeleteBuffers(1, &v_text);
+        return;
     }
-    node = temp;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixels.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    text_bool = true;
 }
 
 void Draw::create_vbo(std::vector<GLfloat>& data, std::vector<unsigned int>& indices) {
@@ -172,18 +80,14 @@ void Draw::create_vbo(std::vector<GLfloat>& data, std::vector<unsigned int>& ind
 
 void Draw::render_vbo(GLsizei indexCount, bool state)
 {
-    std::size_t offset_color = 3;
+    std::size_t offset_color = 6;
     if (vt_bool)
         offset_color += 2;
-    if (vn_bool)
-        offset_color += 3;
     offset_color *= sizeof(GLfloat);
 
-    GLsizei stride = 3;
+    GLsizei stride = 6;
     if (vt_bool)
         stride += 2;
-    if (vn_bool)
-        stride += 3;
     stride += 4;
     stride *= sizeof(GLfloat);
 
@@ -191,17 +95,19 @@ void Draw::render_vbo(GLsizei indexCount, bool state)
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, stride, (void*)0);
-    if (vt_bool == true) {
+    if (vt_bool == true && state == true) {
+        if (text_bool == true) {
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, v_text);
+        }
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glTexCoordPointer(2, GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
     }
-    if (vn_bool == true) {
-        glEnableClientState(GL_NORMAL_ARRAY);
-        if (vt_bool == false)
-            glNormalPointer(GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
-        else
-            glNormalPointer(GL_FLOAT, stride, (void*)(5 * sizeof(GLfloat)));
-    }
+    glEnableClientState(GL_NORMAL_ARRAY);
+    if (vt_bool == false)
+        glNormalPointer(GL_FLOAT, stride, (void*)(3 * sizeof(GLfloat)));
+    else
+        glNormalPointer(GL_FLOAT, stride, (void*)(5 * sizeof(GLfloat)));
 
     if (state) {
         glEnableClientState(GL_COLOR_ARRAY);
@@ -220,9 +126,12 @@ void Draw::render_vbo(GLsizei indexCount, bool state)
     glDisableClientState(GL_VERTEX_ARRAY);
     if (vt_bool == true)
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    if (vn_bool == true)
-        glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
+    if (text_bool == true) {
+        glDisable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -235,10 +144,6 @@ void Draw::inc_xPos(double value) {
     xPos += value;
 }
 
-void Draw::set_vn(bool value) {
-    vn_bool = value;
-}
-
 void Draw::set_vt(bool value) {
     vt_bool = value;
 }
@@ -247,83 +152,12 @@ bool Draw::get_vt() {
     return vt_bool;
 }
 
-bool Draw::get_vn() {
-    return vn_bool;
-}
-
 void Draw::inc_scroll(double value) {
     faces->inc_scale(value);
 }
 
 void Draw::dec_scroll(double value) {
     faces->dec_scale(value);
-}
-
-
-void Draw::draw_triangle(std::vector<GLfloat>& vertices) {
-    glDisable(GL_LIGHTING);
-    if (vertices.empty()) return;
-
-    // Anzahl der Vertices
-    size_t vertexCount = vertices.size() / 3;
-
-    // Farbpuffer anlegen (RGB pro Vertex)
-    std::vector<GLfloat> colors;
-    colors.reserve(vertexCount * 3);
-
-    for (size_t i = 0; i < vertexCount; i++) {
-        // Face index = welcher Dreierblock?
-        bool evenFace = ((i / 3) % 2 == 0);
-
-        if (evenFace) {
-            // Weiß
-            colors.push_back(1.0f);
-            colors.push_back(1.0f);
-            colors.push_back(1.0f);
-        } else {
-            // Grau
-            colors.push_back(0.5f);
-            colors.push_back(0.5f);
-            colors.push_back(0.5f);
-        }
-    }
-
-    // Rendering
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-
-    glVertexPointer(3, GL_FLOAT, 0, vertices.data());
-    glColorPointer(3, GL_FLOAT, 0, colors.data());
-
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-
-    glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glEnable(GL_LIGHTING);
-}
-
-void Draw::setup_face_colors(std::vector<GLfloat>& verts) {
-    float grayValues[6] = {0.09f, 0.11f, 0.14f, 0.16f, 0.04f, 0.06f};
-    static const GLfloat params[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    
-    (void)verts;
-    std::size_t vertex_offset = 0;
-    for (std::size_t face_index = 0; face_index < verts.size(); face_index++) {
-        float gray = grayValues[face_index % 6];
-        GLfloat faceColor[4] = {gray, gray, gray, 1.0f};
-
-        glMaterialfv(GL_FRONT, GL_AMBIENT, faceColor);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, faceColor);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, params);
-        glMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
-        glMaterialfv(GL_FRONT, GL_EMISSION, params);
-        glColor3f(gray, gray, gray);
-
-        std::size_t vertices_in_face = verts.size();
-        glDrawArrays(GL_TRIANGLES, vertex_offset, vertices_in_face);
-        
-        vertex_offset += vertices_in_face;
-    }
 }
 
 void Draw::draw_individual_text(std::array<double, 3UL> type, int16_t type_name) {
@@ -418,12 +252,4 @@ double const &Draw::get_yPos() const {
 
 void Draw::set_faces(Faces*& faces) {
     this->faces = faces;
-}
-
-void Draw::set_xPos(double x) {
-    xPos = x;
-}
-
-void Draw::set_yPos(double y) {
-    yPos = y;
 }

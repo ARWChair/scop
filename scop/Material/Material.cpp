@@ -177,19 +177,11 @@ void Material::split() {
     materials.push_back(material);
 }
 
-void Material::set_filename(std::string &filename) {
+void Material::set_filename(std::string filename) {
     this->filename = filename;
 }
 
-const std::string &Material::get_filename() const {
-    return filename;
-}
-
-const std::vector<std::string> &Material::get_lines() const {
-    return lines;
-}
-
-const std::array<double, 3> &Material::get_Kd(std::string &name) const {
+std::array<double, 3> Material::get_Kd(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -198,7 +190,7 @@ const std::array<double, 3> &Material::get_Kd(std::string &name) const {
     return it->Kd;
 }
 
-const std::array<double, 3> &Material::get_Ka(std::string &name) const {
+std::array<double, 3> Material::get_Ka(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -207,7 +199,7 @@ const std::array<double, 3> &Material::get_Ka(std::string &name) const {
     return it->Ka;
 }
 
-const std::array<double, 3> &Material::get_Ks(std::string &name) const {
+std::array<double, 3> Material::get_Ks(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -216,7 +208,7 @@ const std::array<double, 3> &Material::get_Ks(std::string &name) const {
     return it->Ks;
 }
 
-const std::array<double, 3> &Material::get_Ke(std::string &name) const {
+std::array<double, 3> Material::get_Ke(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -225,7 +217,7 @@ const std::array<double, 3> &Material::get_Ke(std::string &name) const {
     return it->Ke;
 }
 
-const std::array<double, 3> &Material::get_Tf(std::string &name) const {
+std::array<double, 3> Material::get_Tf(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -234,7 +226,7 @@ const std::array<double, 3> &Material::get_Tf(std::string &name) const {
     return it->Tf;
 }
 
-const std::array<double, 1> &Material::get_Ns(std::string &name) const {
+std::array<double, 1> Material::get_Ns(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -243,16 +235,16 @@ const std::array<double, 1> &Material::get_Ns(std::string &name) const {
     return it->Ns;
 }
 
-const std::array<double, 1> &Material::get_Ni(std::string &name) const {
+std::array<double, 1> Material::get_Ni(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
         if (it->name == name)
             break;
-return it->Ni;
+    return it->Ni;
 }
 
-const std::array<double, 1> &Material::get_d(std::string &name) const {
+std::array<double, 1> Material::get_d(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -261,7 +253,7 @@ const std::array<double, 1> &Material::get_d(std::string &name) const {
     return it->d;
 }
 
-const std::array<double, 1> &Material::get_Tr(std::string &name) const {
+std::array<double, 1> Material::get_Tr(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -270,7 +262,7 @@ const std::array<double, 1> &Material::get_Tr(std::string &name) const {
     return it->Tr;
 }
 
-const std::array<double, 1> &Material::get_sharpness(std::string &name) const {
+std::array<double, 1> Material::get_sharpness(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -279,7 +271,7 @@ const std::array<double, 1> &Material::get_sharpness(std::string &name) const {
     return it->sharpness;
 }
 
-const std::array<int, 1> &Material::get_illum(std::string &name) const {
+std::array<int, 1> Material::get_illum(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -288,7 +280,7 @@ const std::array<int, 1> &Material::get_illum(std::string &name) const {
     return it->illum;
 }
 
-const std::string &Material::get_map_Kd(std::string &name) const {
+std::string Material::get_map_Kd(std::string name)  {
     std::vector<Materials> temp = materials;
     std::vector<Materials>::iterator it = temp.begin();
     for (; it != materials.end(); it++)
@@ -297,6 +289,6 @@ const std::string &Material::get_map_Kd(std::string &name) const {
     return it->map_Kd;
 }
 
-const bool &Material::is_missing() const {
+bool Material::is_missing()  {
     return missing;
 }
